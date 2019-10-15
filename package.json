@@ -1,14 +1,23 @@
 {
-  "name": "tester",
+  "name": "jester",
   "version": "0.0.1",
   "description": "Simple unit testing for javascript",
   "main": "index.js",
   "type": "module",
-  "bin": "./bin/tester.js",
+  "directories": {
+    "test": "tests",
+    "lib": "public/models"
+  },
+  "bin": "./bin/jester.js",
   "keywords": [
     "tests",
     "unit tests"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nathanblair/jester.git"
+  },
   "author": "Nathan Blair",
-  "license": "UNLICENCED"
+  "license": "MIT License",
+  "homepage": "https://github.com/nathanblair/jester#readme"
 }

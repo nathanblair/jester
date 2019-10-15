@@ -22,7 +22,7 @@ function showHelp() {
     License:      ${pkg.license}
 
     Usage:
-        (npx) tester [options]
+        (npx) jester [options]
 
     Options:
         -h                    show this message
@@ -265,7 +265,7 @@ async function FindTestClasses(dir, testClasses) {
 /**
  *
  */
-async function tester() {
+async function jester() {
   /** @type {Config} */
   const config = {testDir: "tests", format: "text", dryRun: false, coverageDir: "coverage"}
   if (Configure(config) !== null) return 0
@@ -300,4 +300,4 @@ async function tester() {
   return err || failedTests
 }
 
-tester()
+jester()
