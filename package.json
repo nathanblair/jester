@@ -15,9 +15,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nathanblair/jester.git"
+    "url": "git+https://github.com/SonicOriginalSoftware/jester.git"
   },
   "author": "Nathan Blair",
   "license": "MIT License",
-  "homepage": "https://github.com/nathanblair/jester#readme"
+  "homepage": "https://github.com/SonicOriginalSoftware/jester#readme"
 }
