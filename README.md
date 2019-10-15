@@ -16,13 +16,16 @@ An async JS test runner - using V8 code coverage and ES6 Modules
 
 # How-to
 - Create a test script file in a `tests` (name not strict, but advised) folder (or subfolders) in your project hierarchy
-- In that script file, make a class that extends Test (also `import { Test } from "@sonicoriginalsoftware/jester"`
-- Override the static async method `Run` (it gets a `TestLogger` instance that is configured with your preference for output format)
-- The following isn't strictly required, but advised
-  - Initialize `failedAssertions` and `totalAssertions` to 0
-  - Increment `failedAssertions` depending on the result of the `Test.Assert` method call
-  - Increment `totalAssertions` after each `Test.Assert` method call
-  - Return `[failedAssertions, totalAssertions]`
+- In that script file
+  - `import { Test } from "@sonicoriginalsoftware/jester"`
+  - Make a class that extends Test
+  - Override the static async method `Run` (it gets a `TestLogger` instance that is configured with your preference for output format)
+  - The following isn't strictly required, but advised
+    - In the `Run` method
+      - Initialize `failedAssertions` and `totalAssertions` to 0
+      - Increment `failedAssertions` depending on the result of the `Test.Assert` method call
+      - Increment `totalAssertions` after each `Test.Assert` method call
+      - Return `[failedAssertions, totalAssertions]`
   
   # `Test.Assert`
   - arg1 is a function callback that will supply the assertion statement (`assert.strictEqual(1, 1)`)
@@ -30,5 +33,5 @@ An async JS test runner - using V8 code coverage and ES6 Modules
   - arg3 is the testLogger that should print arg2 (usually the one received in the `Run` function arg
   - Returns whether the `assert` function callback was successful or not (Boolean)
   
-  ** For more information, see the tests used to test jester! **
+  **For more information, see the tests used to test jester!**
 
