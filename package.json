@@ -1,13 +1,9 @@
 {
   "name": "@sonicoriginalsoftware/jester",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Simple unit testing for javascript",
   "main": "index.js",
   "type": "module",
-  "directories": {
-    "test": "tests",
-    "lib": "public/models"
-  },
   "bin": "./bin/jester.js",
   "keywords": [
     "tests",

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { existsSync, readdir, stat, writeFileSync } from "fs"
+import { existsSync, readdir, stat, writeFileSync, readFileSync } from "fs"
 import { Session } from "inspector";
-import { join, sep as pathSep } from "path"
+import { join, sep as pathSep, dirname } from "path"
 import { performance } from "perf_hooks"
 import { TestLogger } from "../lib/logger.js"
 import { Test } from "../lib/test.js"
-// @ts-ignore
-import pkg from '../package.json'
+
+const pkg = JSON.parse(readFileSync(join(dirname(process.argv[1]), '../package.json')))
 
 /** @typedef {"text" | "md"} Format */
 /** @typedef {{ testDir: String, format: Format, dryRun: Boolean, coverageDir: String }} Config */
