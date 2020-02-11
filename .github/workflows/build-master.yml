@@ -37,11 +37,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
+      - run: npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
       - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
       - run: ls
       - run: git add docs
       - run: git commit -m "Updating documentation"
       - run: git push
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
