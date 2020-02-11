@@ -16,6 +16,13 @@
   "author": "Nathan Blair",
   "license": "MIT License",
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
+  "scripts": {
+    "test": "node --experimental-json-modules bin/jester.js",
+    "gen-coverage": "npx c8 --temp-directory=coverage report"
+  },
+  "optionalDependencies": {
+    "c8": "^7.1.0"
+  },
   "devDependencies": {
     "@types/node": "^13.7.0",
     "jsdoc": "^3.6.3"
