@@ -1,4 +1,4 @@
-name: BuildRel
+name: master
 
 on:
   push:

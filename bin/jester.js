@@ -277,7 +277,7 @@ async function jester() {
   }
   if (err !== null) return err
 
-  console.warn(`Found ${testClasses.length} tests`)
+  console.warn(`Found ${testClasses.length} test modules`)
   console.warn('')
 
   let testsRun = 0

@@ -1,5 +1,5 @@
 # jester
-![](https://github.com/sonicoriginalsoftware/jester/workflows/BuildRel/badge.svg)
+![](https://github.com/sonicoriginalsoftware/jester/workflows/master/badge.svg)
 
 © 2020 Nathan Blair
 

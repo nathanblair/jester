@@ -17,8 +17,9 @@
   "license": "MIT License",
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
-    "test": "node --experimental-json-modules bin/jester.js",
-    "gen-coverage": "npx c8 --temp-directory=coverage report"
+    "test": "node --no-warnings --experimental-json-modules bin/jester.js",
+    "gen-coverage": "npx c8 --temp-directory=coverage report",
+    "prepublishOnly": "npx jsdoc -R README.md -P package.json lib/*"
   },
   "devDependencies": {
     "c8": "^7.1.0",
