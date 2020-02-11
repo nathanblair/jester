@@ -38,6 +38,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm publish
+      - run: ls
+      - run: git add docs
+      - run: git commit -m "Updating documentation"
+      - run: git push
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
