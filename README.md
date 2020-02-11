@@ -6,16 +6,15 @@ An async JS test runner - using V8 code coverage and ES6 Modules
 - None!
 
 # Running
-- Need to execute `node` with the path to the `jester.js` binary
-  - e.g. `node [experimental flags] node_modules/.bin/jester.js`
-    - On node < 13.8.0, need to use the `--experimental-modules` flag
-    - All node versions need to run with the `--experimental-json-modules` flag
+- `npx [experimental flags] jester`
+  - On node < 13.8.0, need to use the `--experimental-modules` flag
+  - All node versions need to run with the `--experimental-json-modules` flag
 - Once ES6 modules are supported without the `--experimental-modules` and `--experimental-json-modules` flags, you can just run `npx jester` (or `jester` if installed globally)
 - `jester` walks your `tests` folder (change using the `-d` flag) asynchronously to round up all your Test classes (see [Test Documentation](https://sonicoriginalsoftware.github.io/jester/Test.html)), then executes them all asynchronously
 - It uses `performance` from `perf_hooks` to time the execution of all test executions
 
 # Help
-- Run `jester -h` for help on configuring
+- Run with the `-h` flag for help on configuring
 
 # Documentation
 See https://sonicoriginalsoftware.github.io/jester/
