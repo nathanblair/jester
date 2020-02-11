@@ -15,5 +15,9 @@
   },
   "author": "Nathan Blair",
   "license": "MIT License",
-  "homepage": "https://github.com/SonicOriginalSoftware/jester#readme"
+  "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
+  "devDependencies": {
+    "@types/node": "^13.7.0",
+    "jsdoc": "^3.6.3"
+  }
 }

@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
-import { existsSync, readdir, stat, writeFileSync } from "fs"
-import { Session } from "inspector";
-import { join, sep as pathSep } from "path"
-import { performance } from "perf_hooks"
-import { TestLogger } from "../lib/logger.js"
-import { Test } from "../lib/test.js"
+import {existsSync, readdir, stat, writeFileSync} from "fs"
+import {Session} from "inspector";
+import {join, sep as pathSep} from "path"
+import {performance} from "perf_hooks"
+import {TestLogger} from "../lib/logger.js"
+import {Test} from "../lib/test.js"
 import pkg from "../package.json"
+import {Status} from "../lib/status.js"
 
 /** @typedef {"text" | "md"} Format */
 /** @typedef {{ testDir: String, format: Format, dryRun: Boolean, coverageDir: String }} Config */
@@ -119,19 +120,16 @@ function Configure(config) {
 }
 
 /**
- * @param {typeof Test} test
+ * @param {typeof Test} testModule
  * @param {TestLogger} testLogger
  * @param {boolean} dryRun
  */
-async function RunTest(test, testLogger, dryRun) {
-  testLogger.WriteTestHead(test.testClassName)
-
-  let [failedAssertions, totalAssertions] = [0, 0]
-
-  if (!dryRun) [failedAssertions, totalAssertions] = await test.Run(testLogger)
-
-  testLogger.WriteTestFoot(test.testClassName, failedAssertions, totalAssertions)
-  return failedAssertions !== 0 ? 1 : 0
+async function RunTest(testModule, testLogger, dryRun) {
+  testLogger.WriteTestHead(testModule.testClassName)
+  const status = new Status()
+  if (!dryRun) await testModule.Run(status, testLogger)
+  testLogger.WriteTestFoot(testModule.testClassName, status)
+  return status.failedAssertions !== 0 ? 1 : 0
 }
 
 /**
@@ -150,7 +148,7 @@ async function RunTests(testClasses, testLogger, dryRun, coverageDir) {
   // session.post("Profiler.startPreciseCoverage", {callCount: true, detailed: true})
 
   const initialTime = performance.now();
-  testResults  = await Promise.all(testClasses.map(eachTest => RunTest(eachTest, testLogger, dryRun)))
+  testResults = await Promise.all(testClasses.map(eachTest => RunTest(eachTest, testLogger, dryRun)))
   const endingTime = performance.now()
 
   // session.post("Profiler.takePreciseCoverage", (err, data) => {
@@ -173,7 +171,7 @@ async function RunTests(testClasses, testLogger, dryRun, coverageDir) {
  */
 function GetPathStats(fullPath) {
   return new Promise((resolve, reject) => {
-    stat(fullPath, (err, stats) => { if (err) reject(err); resolve(stats) })
+    stat(fullPath, (err, stats) => {if (err) reject(err); resolve(stats)})
   })
 }
 
@@ -204,7 +202,7 @@ async function ImportTestClasses(module, testClasses) {
  * @param {typeof Test[]} testClasses
  */
 async function EntryCallBack(fullPath, testClasses) {
-  /** @type {import('fs').Stats} */
+  /** @type {import('fs').Stats?} */
   let entryStats = null
   try {
     entryStats = await GetPathStats(fullPath)
@@ -230,7 +228,7 @@ async function EntryCallBack(fullPath, testClasses) {
  */
 function GetEntriesInDir(dir) {
   return new Promise((resolve, reject) => {
-    readdir(dir, (err, entries) => { if (err) reject(err); resolve(entries) })
+    readdir(dir, (err, entries) => {if (err) reject(err); resolve(entries)})
   })
 }
 
@@ -247,10 +245,8 @@ async function FindTestClasses(dir, testClasses) {
     console.error(error)
   }
 
+  /** @type {Promise<void>[]} */
   let entryPromises = []
-  /**
-   * @param {string} entry
-   */
   entries.forEach(entry =>
     entryPromises.push(new Promise(async (resolve, _) =>
       resolve(await EntryCallBack(join(dir, entry), testClasses))
@@ -270,6 +266,7 @@ async function jester() {
   if (Configure(config) !== null) return 0
 
   let err = null
+  /** @type {typeof Test[]} */
   let testClasses = []
   try {
     await FindTestClasses(config.testDir, testClasses)
