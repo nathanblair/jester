@@ -1,6 +1,8 @@
 # jester
-© 2020 Nathan Blair
 ![](https://github.com/sonicoriginalsoftware/jester/workflows/Node.js%20CI/badge.svg)
+
+© 2020 Nathan Blair
+
 An async JS test runner - using V8 code coverage and ES6 Modules
 
 # Dependencies
