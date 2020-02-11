@@ -1,0 +1,9 @@
+.vscode
+.github
+coverage
+node_modules
+docs
+tests
+**.code-workspace
+tsconfig.json
+

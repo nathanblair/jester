@@ -1,6 +1,6 @@
 {
   "name": "@sonicoriginalsoftware/jester",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Simple unit testing for javascript",
   "main": "index.js",
   "type": "module",
