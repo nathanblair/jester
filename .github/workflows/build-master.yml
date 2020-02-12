@@ -6,7 +6,7 @@ on:
       - "master"
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -14,8 +14,9 @@ jobs:
         node-version: [13.x]
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
@@ -25,26 +26,50 @@ jobs:
           CI: true
 
   publish:
-    needs: build
+    needs: test
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [13.x]
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get git info
+        run: |
+          git rev-parse --abbrev-ref HEAD
+          git remote --verbose
+          git checkout
+
+      - name: Configure git
+        run: |
+          git config user.email 'nathanblair@users.noreply.github.com'
+          git config user.name "Nathan Blair"
+
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
+
       - run: npm ci
+
       - run: npx jsdoc -R README.md -P package.json -d docs lib/*
-      - run: ls
-      - run: git config user.email 'github.actions@noreply.github.com'
-      - run: git config user.name "Github Actions"
-      - run: git add docs
-      - run: git commit -m "Updated documentation"
+
+      - name: Git Commit
+        run: |
+          git add docs
+          git commit -m "Updated documentation"
+
       - run: npm version patch
+
+      - run: git log -n 3
+
       - run: git push
+
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
