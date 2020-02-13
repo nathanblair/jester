@@ -23,10 +23,10 @@ jobs:
         run: |
           echo Requesting PR base branch...
           head_branch=$(curl $PR_URL | jq -r '.head.ref')
-          base_branch=$(curl $PR_URL | jq -r '.head.ref')
+          base_branch=$(curl $PR_URL | jq -r '.base.ref')
 
-          echo PR base branch: $head_branch
           echo PR head branch: $head_branch
+          echo PR base branch: $base_branch
           [[ $head_branch == 'develop' && $base_branch == 'prod' ]]
         env:
           PR_URL: ${{ github.event.issue.pull_request.url }}
