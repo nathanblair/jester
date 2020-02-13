@@ -16,13 +16,18 @@ jobs:
         node-version: [13.x]
 
     steps:
+      - run: echo $github.event
+
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
       - run: npm ci
+
       - run: npm test
         env:
           CI: true
