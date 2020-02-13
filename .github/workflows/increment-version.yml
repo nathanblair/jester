@@ -1,0 +1,38 @@
+name: increment-version
+
+on:
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  increment:
+    if: startsWith(github.event.comment.body, 'npm version')
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [13.x]
+
+    steps:
+      # TODO Make sure the comment comes from a PR to merge develop into prod
+      - name: Checkout develop branch
+        uses: actions/checkout@v2
+        with:
+          ref: develop
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Increment version on develop branch
+        run: npm version patch
+
+      - name: Check the git log, just for records
+        run: git log -n 3
+
+      - run: git push origin develop
+

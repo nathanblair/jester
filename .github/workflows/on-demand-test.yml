@@ -7,14 +7,17 @@ on:
 
 jobs:
   on-demand-test:
-    runs-on: ubuntu-latest
     if: startsWith(github.event.comment.body, 'Test')
+
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
         node-version: [13.x]
 
     steps:
+      # TODO Make sure the comment comes from a PR
+      # And find out the branch desired to be tested from the PR information
       - name: Parse branch
         run: |
           branch="${BODY/Test/ }"

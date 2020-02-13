@@ -1,6 +1,5 @@
 # jester
-![](https://github.com/sonicoriginalsoftware/jester/workflows/test/badge.svg?branch=master)
-![](https://github.com/sonicoriginalsoftware/jester/workflows/test/badge.svg?branch=develop)
+![](https://github.com/sonicoriginalsoftware/jester/workflows/test/badge.svg)
 ![](https://github.com/sonicoriginalsoftware/jester/workflows/publish/badge.svg)
 
 © 2020 Nathan Blair

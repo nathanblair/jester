@@ -23,34 +23,16 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install and generate docs
-        run: |
+      - name: Install and publish
+      - run: |
           npm ci
-          npm run gen-docs
-
-      - name: Commit updated docs
-        run: |
-          git add docs
-          git commit -m 'Updated documentation'
-
-      - name: Increment version on master branch
-        run: npm version patch
-
-      - run: git log -n 3
-
-      - run: git push origin master
-
-      - run: npm publish
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
-      - name: Checkout dev branch
-        uses: actions/checkout@v2
-        with:
-          ref: dev
-
-      - name: Increment jester version on dev branch
+      - name: Generate docs
         run: |
-          npm version patch
-          git push origin dev
+          npm run gen-docs
+
+      # TODO Push the docs to the master branch for gh-pages update
 
