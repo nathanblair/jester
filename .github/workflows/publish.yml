@@ -1,6 +1,9 @@
-name: published
+name: publish
 
-on: page_build
+on:
+  push:
+    branches:
+      - 'prod'
 
 jobs:
   publish:
@@ -23,12 +26,12 @@ jobs:
       - name: Install and generate docs
         run: |
           npm ci
-          npx jsdoc -R README.md -P package.json -d docs lib/*
+          npm run gen-docs
 
       - name: Commit updated docs
         run: |
           git add docs
-          git commit -m "Updated documentation"
+          git commit -m 'Updated documentation'
 
       - name: Increment version on master branch
         run: npm version patch

@@ -18,7 +18,8 @@
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
     "test": "node --no-warnings --experimental-json-modules bin/jester.js",
-    "gen-coverage": "npx c8 --temp-directory=coverage report"
+    "gen-coverage": "npx c8 --temp-directory=coverage report",
+    "gen-docs": "npx jsdoc -R README.md -P package.json -d docs lib/*"
   },
   "devDependencies": {
     "c8": "^7.1.0",
