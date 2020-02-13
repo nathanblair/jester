@@ -1,0 +1,23 @@
+name: issue-created-test
+
+on:
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  test-issue-creation-event:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [13.x]
+
+    steps:
+      - name: Parse branch
+        run: |
+          branch=${BODY}
+          echo $branch
+        env:
+          BODY: ${{ github.event.comment.body }}
+

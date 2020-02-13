@@ -1,36 +1,9 @@
-name: master
+name: published
 
-on:
-  push:
-    branches:
-      - "master"
+on: page_build
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [13.x]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - run: npm ci
-
-      - run: npm test
-        env:
-          CI: true
-
   publish:
-    needs: test
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -40,12 +13,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Get git info
-        run: |
-          git rev-parse --abbrev-ref HEAD
-          git remote --verbose
-          git checkout
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -68,7 +35,6 @@ jobs:
 
       - run: git log -n 3
 
-      # FIXME
       - run: git push origin master
 
       - run: npm publish
