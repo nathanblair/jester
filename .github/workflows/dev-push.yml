@@ -3,7 +3,7 @@ name: dev-push
 on:
   push:
     branches:
-      - "dev"
+      - "develop"
 
 jobs:
   test:
