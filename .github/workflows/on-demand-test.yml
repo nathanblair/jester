@@ -8,8 +8,8 @@ on:
 jobs:
   on-demand-test:
     if: |
-      github.event.comment.body == 'run tests' &&
-      github.event.comment.author_association == 'COLLABORATOR'
+      github.event.comment.author_association == 'COLLABORATOR' &&
+      github.event.comment.body == 'run tests'
 
     runs-on: ubuntu-latest
 
@@ -21,9 +21,12 @@ jobs:
       - name: Check that comment came from PR thread
         run: |
           echo Checking that comment came from a PR thread...
-          [ -z "${HTML_URL##https://github.com/SonicOriginalSoftware/jester/pull}" ]
+          echo Incoming comment URL: $CHECK
+          echo Pull request URL: $PULL_CHECK
+          case $CHECK in $PULL_CHECK*) exit 0 ;; esac; exit 1
         env:
-          HTML_URL: ${{ github.event.comment.html_url }}
+          CHECK: ${{ github.event.comment.html_url }}
+          PULL_CHECK: "https://github.com/SonicOriginalSoftware/jester/pull"
 
       - name: Get the base branch of the PR
         run: |
