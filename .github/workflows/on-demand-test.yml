@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Parse branch
-      - run: |
+        run: |
           branch="${BODY/Test/ }"
           echo $branch
         env:
