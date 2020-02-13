@@ -30,9 +30,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
+      - name: Initialize docs directory
+        run: |
+          git clone --depth=1 --branch=master $REPO_URL docs
+          rm -rf docs/*
+        env:
+          REPO_URL: ${{ github.repositoryUrl }}
+
       - name: Generate docs
         run: |
           npm run gen-docs
 
-      # TODO Push the docs to the master branch for gh-pages update
+      - name: Update the live docs
+        run: |
+          cd docs
+          git add --all
+          git commit -m "Updated docs"
+          git push
 

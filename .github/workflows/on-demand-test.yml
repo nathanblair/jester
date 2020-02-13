@@ -30,7 +30,7 @@ jobs:
 
       - name: Checkout the base branch
         run: |
-          git clone --single-branch --branch=$BRANCH --depth=1 $REPO_URL .
+          git clone --branch=$BRANCH --depth=1 $REPO_URL .
         env:
           REPO_URL: ${{ github.repositoryUrl }}
 
