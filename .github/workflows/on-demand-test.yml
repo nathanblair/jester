@@ -7,7 +7,10 @@ on:
 
 jobs:
   on-demand-test:
-    if: startsWith(github.event.comment.body, 'run tests')
+    # TODO Make sure the comment comes from a PR
+    # And find out the branch desired to be tested from the PR information
+    # Case insensitive compare
+    if: github.event.comment.body == 'run tests'
 
     runs-on: ubuntu-latest
 
@@ -16,28 +19,22 @@ jobs:
         node-version: [13.x]
 
     steps:
-      # TODO Make sure the comment comes from a PR
-      # And find out the branch desired to be tested from the PR information
-      - name: Parse branch
+      - name: Parse branch from PR
         run: |
-          echo $BODY
-          branch="${BODY#[Tt]est }"
-          echo $branch
+          echo Github context:
+          echo $GH_CONTEXT
+          echo
+          branch="FIXME"
+          echo PR Branch: $branch
           echo "::set-env name=branch::$branch"
         env:
-          BODY: ${{ github.event.comment.body }}
+          GH_CONTEXT: toJson(github)
 
       - name: Checkout code
         run: |
-          echo Git ref: ${{ github.ref }}
-          echo Git sha: ${{ github.sha }}
-          echo Git workspace: ${{ github.workspace }}
-          echo Github actor: ${{ github.actor }}
-          echo
           echo Git would checkout branch: $branch
           echo
           echo git checkout $branch
-          echo
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1

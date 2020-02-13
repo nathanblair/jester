@@ -7,7 +7,10 @@ on:
 
 jobs:
   increment:
-    if: startsWith(github.event.comment.body, 'npm version')
+    # TODO Make sure the comment comes from a PR to merge develop into prod
+    # And also check against github actor to make sure they have permission
+    # to increment the version
+    # if: startsWith(github.event.comment.body, 'npm version')
 
     runs-on: ubuntu-latest
 
@@ -16,8 +19,9 @@ jobs:
         node-version: [13.x]
 
     steps:
-      # TODO Make sure the comment comes from a PR to merge develop into prod
       - name: Checkout develop branch
+        # Remove this if check once the workflow is registered
+        if: startsWith(github.event.comment.body, 'npm version')
         uses: actions/checkout@v2
         with:
           ref: develop
@@ -29,7 +33,9 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Increment version on develop branch
-        run: npm version patch
+        run: $VERSION_COMMAND
+        env:
+          VERSION_COMMAND: ${{ github.event.comment.body }}
 
       - name: Check the git log, just for records
         run: git log -n 3
