@@ -25,7 +25,7 @@ jobs:
           echo Checking that comment came from a PR thread...
           [ -z "${HTML_URL##https://github.com/SonicOriginalSoftware/jester/pull}" ]
         env:
-          GH_CONTEXT: toJson(github)
+          GH_CONTEXT: ${{ toJson(github) }}
           HTML_URL: ${{ github.event.comment.html_url }}
 
       - name: Get the base branch of the PR
