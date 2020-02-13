@@ -21,15 +21,23 @@ jobs:
       - name: Parse branch
         run: |
           echo $BODY
-          branch="${BODY/Test/ }"
+          branch="${BODY#[Tt]est }"
           echo $branch
+          echo "::set-env name=branch::$branch"
         env:
           BODY: ${{ github.event.comment.body }}
 
       - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ branch }}
+        run: |
+          echo Git ref: ${{ github.ref }}
+          echo Git sha: ${{ github.sha }}
+          echo Git workspace: ${{ github.workspace }}
+          echo Github actor: ${{ github.actor }}
+          echo
+          echo Git would checkout branch: $branch
+          echo
+          echo git checkout $branch
+          echo
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1

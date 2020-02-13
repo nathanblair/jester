@@ -17,8 +17,21 @@ jobs:
       - name: Parse branch
         run: |
           echo $BODY
-          branch=${BODY}
+          branch="${BODY#[Tt]est }"
           echo $branch
+          echo "::set-env name=branch::$branch"
         env:
           BODY: ${{ github.event.comment.body }}
+
+      - name: Checkout code
+        run: |
+          echo Git ref: ${{ github.ref }}
+          echo Git sha: ${{ github.sha }}
+          echo Git workspace: ${{ github.workspace }}
+          echo Github actor: ${{ github.actor }}
+          echo
+          echo Git would checkout branch: $branch
+          echo
+          echo git checkout $branch
+          echo
 
