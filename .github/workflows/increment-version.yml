@@ -7,12 +7,10 @@ on:
 
 jobs:
   increment-version:
-    # TODO Make sure the comment comes from a PR to merge develop into prod
-    # And also check against github actor to make sure they have permission
-    # to increment the version
     if: |
-      startsWith(github.event.comment.body, 'npm version') &&
       github.event.comment.author_association == 'COLLABORATOR'
+      && github.event.issue.pull_request != 0
+      && startsWith(github.event.comment.body, 'npm version')
 
     runs-on: ubuntu-latest
 
@@ -21,6 +19,18 @@ jobs:
         node-version: [13.x]
 
     steps:
+      - name: Check that the PR is from develop into prod
+        run: |
+          echo Requesting PR base branch...
+          head_branch=$(curl $PR_URL | jq -r '.head.ref')
+          base_branch=$(curl $PR_URL | jq -r '.head.ref')
+
+          echo PR base branch: $head_branch
+          echo PR head branch: $head_branch
+          [[ $head_branch == 'develop' && $base_branch == 'prod' ]]
+        env:
+          PR_URL: ${{ github.event.issue.pull_request.url }}
+
       - name: Checkout develop branch
         uses: actions/checkout@v2
         with:

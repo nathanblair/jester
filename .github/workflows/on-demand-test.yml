@@ -29,9 +29,10 @@ jobs:
           PR_URL: ${{ github.event.issue.pull_request.url }}
 
       - name: Checkout the base branch
-        # TODO add checkout options that limit what is checked out (only last commit)
         run: |
-          git checkout $branch
+          git clone --single-branch --branch=$BRANCH --depth=1 $REPO_URL .
+        env:
+          REPO_URL: ${{ github.repositoryUrl }}
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
