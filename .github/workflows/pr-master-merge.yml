@@ -67,6 +67,7 @@ jobs:
           git add docs
           git commit -m "Updated documentation"
 
+      - name: Increment version on master branch
       - run: npm version patch
 
       - run: git log -n 3
@@ -78,10 +79,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
-      - name: Increment npm version on dev branch
+      - name: Checkout dev branch
         uses: actions/checkout@v2
         with:
           ref: dev
+      - name: Increment jester version on dev branch
         run: |
           npm version patch
           git push origin dev
