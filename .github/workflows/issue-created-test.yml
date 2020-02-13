@@ -23,7 +23,7 @@ jobs:
           echo PR Branch: $branch
           echo "::set-env name=branch::$branch"
         env:
-          GH_CONTEXT: toJson(github)
+          GH_CONTEXT: ${{ toJson(github) }}
 
       - name: Checkout code
         run: |
