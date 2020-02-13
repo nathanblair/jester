@@ -16,7 +16,8 @@ jobs:
         node-version: [13.x]
 
     steps:
-      - run: echo $github.event
+      - name: Show the github event name
+        run: echo $github.event
 
       - name: Checkout code
         uses: actions/checkout@v2
