@@ -10,7 +10,9 @@ jobs:
     # TODO Make sure the comment comes from a PR to merge develop into prod
     # And also check against github actor to make sure they have permission
     # to increment the version
-    #if: startsWith(github.event.comment.body, 'npm version')
+    if: |
+      startsWith(github.event.comment.body, 'npm version') &&
+      github.event.comment.author_association == 'COLLABORATOR'
 
     runs-on: ubuntu-latest
 
@@ -19,9 +21,7 @@ jobs:
         node-version: [13.x]
 
     steps:
-      # FIXME
       - name: Checkout develop branch
-        if: startsWith(github.event.comment.body, 'npm version')
         uses: actions/checkout@v2
         with:
           ref: develop
@@ -36,6 +36,7 @@ jobs:
         run: $VERSION_COMMAND
         env:
           VERSION_COMMAND: ${{ github.event.comment.body }}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
       - name: Check the git log, just for records
         run: git log -n 3

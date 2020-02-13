@@ -7,6 +7,9 @@ on:
 
 jobs:
   test-issue-creation-event:
+    if: |
+      github.event.comment.author_association == 'COLLABORATOR'
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -14,18 +17,24 @@ jobs:
         node-version: [13.x]
 
     steps:
-      - name: Parse branch from PR
+      - name: Check that comment came from PR thread
         run: |
           echo Github context:
           echo $GH_CONTEXT
           echo
-          branch="FIXME"
+          echo Checking that comment came from a PR thread...
+          [ -z "${HTML_URL##https://github.com/SonicOriginalSoftware/jester/pull}" ]
+        env:
+          GH_CONTEXT: toJson(github)
+          HTML_URL: ${{ github.event.comment.html_url }}
+
+      - name: Get the base branch of the PR
+        run: |
+          branch="TODO"
           echo PR Branch: $branch
           echo "::set-env name=branch::$branch"
-        env:
-          GH_CONTEXT: ${{ toJson(github) }}
 
-      - name: Checkout code
+      - name: Checkout the base branch
         run: |
           echo Git would checkout branch: $branch
           echo

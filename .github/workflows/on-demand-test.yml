@@ -7,10 +7,9 @@ on:
 
 jobs:
   on-demand-test:
-    # TODO Make sure the comment comes from a PR
-    # And find out the branch desired to be tested from the PR information
-    # Case insensitive compare
-    if: github.event.comment.body == 'run tests'
+    if: |
+      github.event.comment.body == 'run tests' &&
+      github.event.comment.author_association == 'COLLABORATOR'
 
     runs-on: ubuntu-latest
 
@@ -19,31 +18,33 @@ jobs:
         node-version: [13.x]
 
     steps:
-      - name: Parse branch from PR
+      - name: Check that comment came from PR thread
         run: |
-          echo Github context:
-          echo $GH_CONTEXT
-          echo
-          branch="FIXME"
+          echo Checking that comment came from a PR thread...
+          [ -z "${HTML_URL##https://github.com/SonicOriginalSoftware/jester/pull}" ]
+        env:
+          HTML_URL: ${{ github.event.comment.html_url }}
+
+      - name: Get the base branch of the PR
+        run: |
+          branch="TODO"
           echo PR Branch: $branch
           echo "::set-env name=branch::$branch"
-        env:
-          GH_CONTEXT: toJson(github)
 
-      - name: Checkout code
+      - name: Checkout the base branch
+        # TODO add checkout options that limit what is checked out (only last commit)
         run: |
-          echo Git would checkout branch: $branch
-          echo
-          echo git checkout $branch
+          git checkout $branch
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
 
-      - run: npm ci
-
-      - run: npm test
+      - name: Install and test
+        run: |
+          npm test
+          npm ci
         env:
           CI: true
 
