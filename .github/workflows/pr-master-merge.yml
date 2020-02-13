@@ -1,9 +1,11 @@
 name: master
 
 on:
-  push:
+  pull_request:
     branches:
       - "master"
+    types:
+      - ready_for_review
 
 jobs:
   test:
@@ -46,7 +48,7 @@ jobs:
 
       - name: Configure git
         run: |
-          git config user.email 'nathanblair@users.noreply.github.com'
+          git config user.email 'engineer.nblair@gmail.com'
           git config user.name "Nathan Blair"
 
       - name: Setup Node.js ${{ matrix.node-version }}
@@ -55,9 +57,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm ci
-
-      - run: npx jsdoc -R README.md -P package.json -d docs lib/*
+      - name: Install and generate docs
+      - run: |
+          npm ci
+          npx jsdoc -R README.md -P package.json -d docs lib/*
 
       - name: Git Commit
         run: |
@@ -68,9 +71,18 @@ jobs:
 
       - run: git log -n 3
 
-      - run: git push
+      # FIXME
+      - run: git push origin master
 
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+
+      - name: Increment npm version on dev branch
+        uses: actions/checkout@v2
+        with:
+          ref: dev
+        run: |
+          npm version patch
+          git push origin dev
 
