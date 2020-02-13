@@ -1,25 +1,31 @@
-name: pr-review-ready
+name: on-demand-test
 
 on:
-  pull_request:
-    branches:
-      - "master"
+  issue_comment:
     types:
-      - ready_for_review
+      - created
 
 jobs:
-  test:
+  on-demand-test:
     runs-on: ubuntu-latest
+    if: startsWith(github.event.comment.body, 'Test')
 
     strategy:
       matrix:
         node-version: [13.x]
 
     steps:
-      - run: echo $github.event
+      - name: Parse branch
+      - run: |
+          branch="${BODY/Test/ }"
+          echo $branch
+        env:
+          BODY: ${{ github.event.comment.body }}
 
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: ${{ branch }}
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1

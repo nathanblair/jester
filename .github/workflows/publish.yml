@@ -1,11 +1,9 @@
 name: master
 
 on:
-  pull_request:
+  push:
     branches:
       - "master"
-    types:
-      - ready_for_review
 
 jobs:
   test:
@@ -40,8 +38,6 @@ jobs:
         node-version: [13.x]
 
     steps:
-      - run: echo $github.event
-
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -50,11 +46,6 @@ jobs:
           git rev-parse --abbrev-ref HEAD
           git remote --verbose
           git checkout
-
-      - name: Configure git
-        run: |
-          git config user.email 'engineer.nblair@gmail.com'
-          git config user.name "Nathan Blair"
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -67,7 +58,7 @@ jobs:
           npm ci
           npx jsdoc -R README.md -P package.json -d docs lib/*
 
-      - name: Git Commit
+      - name: Commit updated docs
         run: |
           git add docs
           git commit -m "Updated documentation"
