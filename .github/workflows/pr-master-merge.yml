@@ -37,6 +37,8 @@ jobs:
         node-version: [13.x]
 
     steps:
+      - run: echo $github.event
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -58,7 +60,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install and generate docs
-      - run: |
+        run: |
           npm ci
           npx jsdoc -R README.md -P package.json -d docs lib/*
 
@@ -68,7 +70,7 @@ jobs:
           git commit -m "Updated documentation"
 
       - name: Increment version on master branch
-      - run: npm version patch
+        run: npm version patch
 
       - run: git log -n 3
 
@@ -83,6 +85,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: dev
+
       - name: Increment jester version on dev branch
         run: |
           npm version patch
