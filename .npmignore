@@ -1,10 +1,10 @@
-.vscode
-.github
 **.tgz
+.vscode
 coverage
 node_modules
 docs
 tests
+.github
 **.code-workspace
 tsconfig.json
 

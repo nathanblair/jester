@@ -1,4 +1,6 @@
-.vscode
 **.tgz
+.vscode
 coverage/*
 node_modules
+docs
+
