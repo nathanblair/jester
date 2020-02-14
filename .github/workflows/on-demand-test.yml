@@ -54,7 +54,7 @@ jobs:
           workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/$RUN_ID
           echo Workflow URL: $workflowUrl
           
-          textStatus=$(( $EXIT_CODE == 0 )) && '**Passed**' || '**Failed**'
+          (( EXIT_CODE == 0 )) && textStatus='**Passed**' || textStatus='**Failed**'
 
           echo Status: $textStatus
 
