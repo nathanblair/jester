@@ -46,3 +46,22 @@ jobs:
         env:
           CI: true
 
+      - name: Report back to the comment thread with the results
+        run: |
+          workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/$RUN_ID
+          echo Status: $STATUS
+          echo Workflow URL: $workflowUrl
+          echo Comments URL: $COMMENTS_URL
+          
+          textStatus=[[ $STATUS ]] && '*Passed*' || '*Failed*'
+
+          curl --request POST --url $COMMENTS_URL \
+            --header 'authorization: Bearer $TOKEN' \
+            --header 'content-type: application/json' \
+            --data '{ "body": "[$textStatus]($workflowUrl)" }'
+        env:
+          STATUS: ${{ success() }}
+          RUN_ID: ${{ github.run_id }}
+          COMMENTS_URL: ${{ github.event.issue.comments_url }}
+          TOKEN: ${{ github.token }}
+
