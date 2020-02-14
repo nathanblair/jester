@@ -51,7 +51,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
       - name: Check the git log, just for records
-        run: git log -n 3
+        run: git log -n 2
 
       - run: git push origin develop
 
