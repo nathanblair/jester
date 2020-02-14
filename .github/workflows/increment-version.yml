@@ -44,30 +44,25 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Configure git
+      - name: Increment version on develop branch and push
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
-      - name: Increment version on develop branch
-        run: |
           $VERSION_COMMAND
-          ec=$?
-          echo "::set-env name=EXIT_CODE::$ec"
+
+          remoteUrl=https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git
+          echo Remote URL: $remoteUrl
+          git push $remoteUrl develop
+          echo "::set-env name=EXIT_CODE::0"
         env:
           VERSION_COMMAND: ${{ github.event.comment.body }}
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
-      - name: Check the git log, just for records
+      - name: Set the status to failed if the version couldn't be incremented
+        if: failed()
         run: |
-          git log -n 2
-
-      # Will this need the github token?
-      - name: Push the incremented version back to the develop branch
-        run: |
-          git push origin develop
-          ec=$?
-          echo "::set-env name=EXIT_CODE::$ec"
+          echo "::set-env name=EXIT_CODE::1"
 
       - name: Report back to the comment thread with the results
         if: always()
