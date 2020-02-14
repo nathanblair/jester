@@ -44,6 +44,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Configure git
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+
       - name: Increment version on develop branch
         run: $VERSION_COMMAND
         env:
@@ -53,5 +58,7 @@ jobs:
       - name: Check the git log, just for records
         run: git log -n 2
 
-      - run: git push origin develop
+      # Will this need the github token?
+      - name: Push the incremented version back to the develop branch
+        run: git push origin develop
 
