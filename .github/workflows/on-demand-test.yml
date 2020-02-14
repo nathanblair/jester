@@ -24,17 +24,13 @@ jobs:
       - name: Get the base branch of the PR
         run: |
           echo Requesting PR base branch...
-          branch=$(curl $PR_URL | jq -r '.head.ref')
+          branch=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')
           echo PR base branch: $branch
           echo "::set-env name=BRANCH::$branch"
-        env:
-          PR_URL: ${{ github.event.issue.pull_request.url }}
 
       - name: Checkout the base branch
         run: |
-          git clone --branch=$BRANCH --depth=1 $REPO_URL .
-        env:
-          REPO_URL: ${{ github.repositoryUrl }}
+          git clone --branch=$BRANCH --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -51,19 +47,11 @@ jobs:
 
       - name: Report back to the comment thread with the results
         run: |
-          workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/$RUN_ID
-          echo Workflow URL: $workflowUrl
-          
+          workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/${{ github.run_id }}
           (( EXIT_CODE == 0 )) && textStatus='**Passed**' || textStatus='**Failed**'
 
-          echo Status: $textStatus
-
-          curl --request POST --url $COMMENTS_URL \
-            --header 'authorization: Bearer $TOKEN' \
+          curl --request POST --url ${{ github.event.issue.comments_url }} \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'content-type: application/json' \
             --data '{ "body": "[$textStatus]($workflowUrl)" }'
-        env:
-          RUN_ID: ${{ github.run_id }}
-          COMMENTS_URL: ${{ github.event.issue.comments_url }}
-          TOKEN: ${{ github.token }}
 
