@@ -10,6 +10,8 @@ jobs:
     if: |
       github.event.comment.author_association == 'COLLABORATOR'
       && github.event.issue.pull_request != 0
+      && github.event.issue.closed_at == 0
+      && github.event.issue.locked == 0
       && startsWith(github.event.comment.body, 'npm version')
 
     runs-on: ubuntu-latest

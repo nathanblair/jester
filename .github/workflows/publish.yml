@@ -23,9 +23,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install and publish
+      - name: Publish
         run: |
-          npm ci
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
@@ -39,6 +38,7 @@ jobs:
 
       - name: Generate docs
         run: |
+          npm ci
           npm run gen-docs
 
       - name: Update the live docs

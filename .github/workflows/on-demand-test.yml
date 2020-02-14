@@ -10,6 +10,8 @@ jobs:
     if: |
       github.event.comment.author_association == 'COLLABORATOR'
       && github.event.issue.pull_request != 0
+      && github.event.issue.closed_at == 0
+      && github.event.issue.locked == 0
       && github.event.comment.body == 'run tests'
 
     runs-on: ubuntu-latest
@@ -39,28 +41,28 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install and test
+      - name: Test
         run: |
           npm test
-          npm ci
+          ec=!?
+          echo "::set-env name=EXIT_CODE::$ec"
         env:
           CI: true
 
       - name: Report back to the comment thread with the results
         run: |
           workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/$RUN_ID
-          echo Status: $STATUS
+          echo Status: $EXIT_CODE
           echo Workflow URL: $workflowUrl
           echo Comments URL: $COMMENTS_URL
           
-          textStatus=[[ $STATUS ]] && '*Passed*' || '*Failed*'
+          textStatus=$(( $EXIT_CODE == 0 )) && '**Passed**' || '**Failed**'
 
           curl --request POST --url $COMMENTS_URL \
             --header 'authorization: Bearer $TOKEN' \
             --header 'content-type: application/json' \
             --data '{ "body": "[$textStatus]($workflowUrl)" }'
         env:
-          STATUS: ${{ success() }}
           RUN_ID: ${{ github.run_id }}
           COMMENTS_URL: ${{ github.event.issue.comments_url }}
           TOKEN: ${{ github.token }}
