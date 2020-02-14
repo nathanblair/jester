@@ -19,7 +19,7 @@
   "scripts": {
     "test": "node --no-warnings --experimental-json-modules bin/jester.js",
     "gen-coverage": "npx c8 --temp-directory=coverage report",
-    "gen-docs": "npx jsdoc -R README.md -d docs lib/*"
+    "gen-docs": "npx jsdoc -d docs lib/*"
   },
   "devDependencies": {
     "@types/node": "^13.7.0",
