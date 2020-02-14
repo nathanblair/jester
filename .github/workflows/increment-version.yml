@@ -50,15 +50,34 @@ jobs:
           git config user.email ${{ github.actor }}@noreply.github.com
 
       - name: Increment version on develop branch
-        run: $VERSION_COMMAND
+        run: |
+          $VERSION_COMMAND
+          ec=$?
+          echo "::set-env name=EXIT_CODE::$ec"
         env:
           VERSION_COMMAND: ${{ github.event.comment.body }}
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
       - name: Check the git log, just for records
-        run: git log -n 2
+        run: |
+          git log -n 2
 
       # Will this need the github token?
       - name: Push the incremented version back to the develop branch
-        run: git push origin develop
+        run: |
+          git push origin develop
+          ec=$?
+          echo "::set-env name=EXIT_CODE::$ec"
+
+      - name: Report back to the comment thread with the results
+        if: always()
+        run: |
+          workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/${{ github.run_id }}
+          (( EXIT_CODE == 0 )) && textStatus='**Incremented!**' || textStatus='**Failed**'
+          data='{ "body": "['$textStatus']('$workflowUrl')" }'
+
+          curl --request POST --url ${{ github.event.issue.comments_url }} \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data "$data"
 

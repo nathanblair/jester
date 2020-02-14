@@ -46,11 +46,11 @@ jobs:
           CI: true
 
       - name: Report back to the comment thread with the results
+        if: always()
         run: |
           workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/${{ github.run_id }}
           (( EXIT_CODE == 0 )) && textStatus='**Passed**' || textStatus='**Failed**'
           data='{ "body": "['$textStatus']('$workflowUrl')" }'
-          echo Payload: $data
 
           curl --request POST --url ${{ github.event.issue.comments_url }} \
             --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
