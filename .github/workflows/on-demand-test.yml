@@ -49,11 +49,11 @@ jobs:
         run: |
           workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/${{ github.run_id }}
           (( EXIT_CODE == 0 )) && textStatus='**Passed**' || textStatus='**Failed**'
-          data="{ 'body': '[$textStatus]($workflowUrl)' }"
+          data="'{ 'body': '[$textStatus]($workflowUrl)' }'"
           echo Payload: $data
 
           curl --request POST --url ${{ github.event.issue.comments_url }} \
             --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'content-type: application/json' \
-            --data '$data'
+            --data $(data)
 
