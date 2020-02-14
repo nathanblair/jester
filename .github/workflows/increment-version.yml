@@ -60,12 +60,12 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
       - name: Set the status to failed if the version couldn't be incremented
-        if: failed()
+        if: ${{ failed() }}
         run: |
           echo "::set-env name=EXIT_CODE::1"
 
       - name: Report back to the comment thread with the results
-        if: always()
+        if: ${{ always() }}
         run: |
           workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/${{ github.run_id }}
           (( EXIT_CODE == 0 )) && textStatus='**Incremented!**' || textStatus='**Failed**'
