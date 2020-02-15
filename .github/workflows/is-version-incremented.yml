@@ -24,6 +24,8 @@ jobs:
           echo Working Version: $workingVer
           echo Production Version: $prodVer
 
+          [[ $workingVer != $prodVer ]]
+
           sorted=$(npx semver $workingVer $prodVer)
 
           checkSort="$prodVer
