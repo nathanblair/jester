@@ -16,10 +16,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [13.x]
-
     steps:
       - name: Check that the PR is from develop into prod
         run: |
@@ -37,12 +33,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: develop
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Increment version on develop branch and push
         run: |

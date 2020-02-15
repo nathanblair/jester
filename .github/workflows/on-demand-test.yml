@@ -16,10 +16,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [13.x]
-
     steps:
       - name: Get the base branch of the PR
         run: |
@@ -32,10 +28,10 @@ jobs:
         run: |
           git clone --branch=$BRANCH --depth=1 ${{ github.repositoryUrl }} .
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 13.x
 
       - name: Test
         run: |
