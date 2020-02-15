@@ -15,7 +15,9 @@ jobs:
 
       - name: Compare working package version to production version
         run: |
-          workingVer=${$(awk '/version/ { print $2 }' RS=',\n' package.json)//\"/}
+          workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
+          workingVer=${workingVer//\"/}
+
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
 
