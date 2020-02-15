@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: develop
+          persist-credentials: false
 
       - name: Increment version on develop branch and push
         run: |
@@ -41,28 +42,23 @@ jobs:
 
           $VERSION_COMMAND
 
-          remoteUrl=https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git
+          remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
           echo Remote URL: $remoteUrl
           git push $remoteUrl develop
-          echo "::set-env name=EXIT_CODE::0"
+          echo "::set-env name=EXIT_CODE::$?"
         env:
           VERSION_COMMAND: ${{ github.event.comment.body }}
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
-      - name: Set the status to failed if the version couldn't be incremented
-        if: failure()
-        run: |
-          echo "::set-env name=EXIT_CODE::1"
-
       - name: Report back to the comment thread with the results
         if: always()
         run: |
-          workflowUrl=https://github.com/sonicoriginalsoftware/jester/actions/runs/${{ github.run_id }}
-          (( EXIT_CODE == 0 )) && textStatus='**Incremented!**' || textStatus='**Failed**'
+          workflowUrl=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          (( EXIT_CODE == 0 )) && textStatus='**Incremented**' || textStatus='**Failed**'
           data='{ "body": "['$textStatus']('$workflowUrl')" }'
 
           curl --request POST --url ${{ github.event.issue.comments_url }} \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'authorization: Bearer ${{ github.token }}' \
             --header 'content-type: application/json' \
             --data "$data"
 
