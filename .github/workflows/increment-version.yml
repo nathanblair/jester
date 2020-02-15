@@ -40,11 +40,13 @@ jobs:
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
-          $VERSION_COMMAND
+          tag=$($VERSION_COMMAND)
+          git tag $tag -a "Auto-incremented to $tag"
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
           echo Remote URL: $remoteUrl
           git push $remoteUrl develop
+          git push $remoteUrl $tag
           echo "::set-env name=EXIT_CODE::$?"
         env:
           VERSION_COMMAND: ${{ github.event.comment.body }}
