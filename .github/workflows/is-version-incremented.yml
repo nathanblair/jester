@@ -15,11 +15,23 @@ jobs:
 
       - name: Compare working package version to production version
         run: |
-          workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
+          workingVer=${$(awk '/version/ { print $2 }' RS=',\n' package.json)//\"/}
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
+
           echo Working Version: $workingVer
           echo Production Version: $prodVer
 
-          [[ $workingVer == ${prodVer//\"/} ]]
+          sorted=$(npx semver $workingVer $prodVer)
+
+          checkSort="$prodVer
+          $workingVer"
+
+          echo Sorted:
+          echo $sorted
+          echo
+          echo Checked Sort:
+          echo $checkSort
+
+          [[ $sorted == $checkSort ]]
 
