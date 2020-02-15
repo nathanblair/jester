@@ -18,6 +18,8 @@ jobs:
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
+          echo Working Version: $workingVer
+          echo Production Version: $prodVer
 
           [[ $workingVer == ${prodVer//\"/} ]]
 
