@@ -1,4 +1,4 @@
-name: version-is-incremented
+name: is-version-incremented
 
 on:
   push:
@@ -16,7 +16,8 @@ jobs:
       - name: Compare working package version to production version
         run: |
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
-          prodVer=$(npm view @${{ github.repository }} version)
+          repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
+          prodVer=$(npm view ${repoName//\"/} version)
 
-          [[ $workingVer == \"$prodVer\" ]]
+          [[ $workingVer == ${prodVer//\"/} ]]
 
