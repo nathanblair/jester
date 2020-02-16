@@ -41,17 +41,33 @@ jobs:
           git config user.email ${{ github.actor }}@noreply.github.com
 
           tag=$($VERSION_COMMAND)
+          echo "::set-env name=EXIT_CODE::0"
+          echo "::set-env name=VERSION::$tag"
+
+        env:
+          VERSION_COMMAND: ${{ github.event.comment.body }}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+
+      - name: Mark the failure reason as not able to set the version
+        if: failed()
+        run: |
+          echo "::set-env name=REASON::'Could not set the version'"
+          echo "::set-env name=EXIT_CODE::1"
+
+      - name: Push the new commit and tag
+        run: |
           git tag $tag -a $tag -m "Auto-set to $tag"
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
           echo Remote URL: $remoteUrl
           git push $remoteUrl develop
           git push $remoteUrl $tag
-          echo "::set-env name=EXIT_CODE::$?"
-          echo "::set-env name=VERSION::$tag"
-        env:
-          VERSION_COMMAND: ${{ github.event.comment.body }}
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+
+      - name: Set a failed exit code if any part of the previous job failed
+        if: failed()
+        run: |
+          echo "::set-env name=REASON::'Could not push the new commits and tags'"
+          echo "::set-env name=EXIT_CODE::1"
 
       - name: Report back to the comment thread with the results
         if: always()
@@ -63,6 +79,7 @@ jobs:
           body='{ "body": "['$textStatus']('$workflowUrl')'
 
           (( EXIT_CODE == 0 )) && body='$body\n\n[$VERSION]($tagUrl)'
+          (( EXIT_CODE == 1 )) && body='$body\n\n$REASON'
 
           body='$body" }'
           echo Comment body: $body
