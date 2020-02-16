@@ -13,9 +13,9 @@ jobs:
       - name: Get the base branch of the PR
         run: |
           echo Requesting PR base branch...
-          branch=$(curl ${{ github.event }} | jq -r '.head.ref')
-          echo PR base branch: $branch
-          git clone --branch=$branch --depth=1 ${{ github.repositoryUrl }} .
+          git clone --branch=${{ github.event.head }} --depth=1 ${{ github.repositoryUrl }} .
+        env:
+          PAYLOAD: ${{ github }}
 
       - name: Compare working package version
         run: |
