@@ -26,10 +26,10 @@ jobs:
           echo Prod Version: $prodVer
 
           # Working version should be the same as the PR Title version
-          [[ $workingVer == ${{ github.event.pull_request.title }} ]] || echo Working version not equal to the PR Version!
+          [[ $workingVer == ${{ github.event.pull_request.title }} ]] || echo Working version not equal to the PR Version! && exit 1
 
           # Working version should not be the same as the production version
-          [[ $workingVer != $prodVer ]] || echo Working version equal to the production version!
+          [[ $workingVer != $prodVer ]] || echo Working version equal to the production version! && exit 1
 
           sorted=$(npx semver $workingVer $prodVer)
 
@@ -44,5 +44,5 @@ jobs:
           echo $checkSort
 
           # Verify that the order is correct
-          [[ $sorted == $checkSort ]] || echo Working version not greater than the production version!
+          [[ $sorted == $checkSort ]] || echo Working version not greater than the production version! && exit 1
 
