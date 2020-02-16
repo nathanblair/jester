@@ -10,13 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get the base branch of the PR
-        run: |
-          echo Requesting PR base branch...
-          git clone --branch=${{ github.event.pull_request.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
-
       - name: Compare working package version
         run: |
+          git clone --branch=${{ github.event.pull_request.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
+
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           workingVer=${workingVer//\"/}
 
@@ -29,10 +26,10 @@ jobs:
           echo Prod Version: $prodVer
 
           # Working version should be the same as the PR Title version
-          [[ $workingVer == ${{ github.event.pull_request.title }} ]]
+          [[ $workingVer == ${{ github.event.pull_request.title }} ]] || echo Working version not equal to the PR Version!
 
           # Working version should not be the same as the production version
-          [[ $workingVer != $prodVer ]]
+          [[ $workingVer != $prodVer ]] || echo Working version equal to the production version!
 
           sorted=$(npx semver $workingVer $prodVer)
 
@@ -47,5 +44,5 @@ jobs:
           echo $checkSort
 
           # Verify that the order is correct
-          [[ $sorted == $checkSort ]]
+          [[ $sorted == $checkSort ]] || echo Working version not greater than the production version!
 
