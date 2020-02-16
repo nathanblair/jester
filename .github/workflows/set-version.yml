@@ -48,13 +48,12 @@ jobs:
           echo "::set-env name=EXIT_CODE::1"
 
 
-      - name: Set version on develop branch and push
+      - name: Set version on develop branch
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
           tag=$($VERSION_COMMAND)
-          echo "::set-env name=EXIT_CODE::0"
           echo "::set-env name=VERSION::$tag"
 
         env:
@@ -76,10 +75,10 @@ jobs:
           git push $remoteUrl develop
           git push $remoteUrl $tag
 
-      - name: Set a failed exit code if any part of the previous job failed
+      - name: Mark the failure reason as not able to push the commit and tag
         if: failure()
         run: |
-          echo "::set-env name=REASON::'Could not push the new commits and tags'"
+          echo "::set-env name=REASON::'Could not push the new commit and tag'"
           echo "::set-env name=EXIT_CODE::1"
 
       - name: Report back to the comment thread with the results
