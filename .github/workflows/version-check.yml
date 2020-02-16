@@ -19,14 +19,13 @@ jobs:
           workingVer=${workingVer//\"/}
 
           # Check what the PR version is (from the title of the PR)
-          prTitleVer=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.title')
+          prTitleVer=$(curl ${{ github.event }} | jq -r '.title')
 
           # Check the package version from npm
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
 
           echo Working Version: $workingVer
-          echo Bot Reported Version: $botReportedVer
           echo PR Title Version: $prTitleVer
           echo Prod Version: $prodVer
 
@@ -50,4 +49,6 @@ jobs:
 
           # Verify that the order is correct
           [[ $sorted == $checkSort ]]
+        env:
+          PAYLOAD: ${{ github }}
 
