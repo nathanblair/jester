@@ -20,19 +20,16 @@ jobs:
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           workingVer=${workingVer//\"/}
 
-          # Check what the PR version is (from the title of the PR)
-          prTitleVer=$(curl ${{ github.event }} | jq -r '.title')
-
           # Check the package version from npm
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
 
           echo Working Version: $workingVer
-          echo PR Title Version: $prTitleVer
+          echo PR Title Version: ${{ github.event.pull_request.title }}
           echo Prod Version: $prodVer
 
           # Working version should be the same as the PR Title version
-          [[ $workingVer == $prTitleVer ]]
+          [[ $workingVer == ${{ github.event.pull_request.title }} ]]
 
           # Working version should not be the same as the production version
           [[ $workingVer != $prodVer ]]
