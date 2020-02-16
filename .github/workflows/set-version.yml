@@ -29,11 +29,24 @@ jobs:
         env:
           PR_URL: ${{ github.event.issue.pull_request.url }}
 
+      - name: Mark the failure reason as not able to set the version
+        if: failure()
+        run: |
+          echo "::set-env name=REASON::'PR is not merging develop into prod'"
+          echo "::set-env name=EXIT_CODE::1"
+
       - name: Checkout develop branch
         uses: actions/checkout@v2
         with:
           ref: develop
           persist-credentials: false
+
+      - name: Mark the failure reason as not able to check out the code
+        if: failure()
+        run: |
+          echo "::set-env name=REASON::'Could not check out the develop branch'"
+          echo "::set-env name=EXIT_CODE::1"
+
 
       - name: Set version on develop branch and push
         run: |
@@ -49,7 +62,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
       - name: Mark the failure reason as not able to set the version
-        if: failed()
+        if: failure()
         run: |
           echo "::set-env name=REASON::'Could not set the version'"
           echo "::set-env name=EXIT_CODE::1"
@@ -64,7 +77,7 @@ jobs:
           git push $remoteUrl $tag
 
       - name: Set a failed exit code if any part of the previous job failed
-        if: failed()
+        if: failure()
         run: |
           echo "::set-env name=REASON::'Could not push the new commits and tags'"
           echo "::set-env name=EXIT_CODE::1"
