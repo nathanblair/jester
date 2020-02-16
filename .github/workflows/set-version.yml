@@ -88,12 +88,11 @@ jobs:
           tagUrl=https://github.com/${{ github.repository }}/tree/$VERSION
 
           (( EXIT_CODE == 0 )) && textStatus='**Version set to:**' || textStatus='**Failed**'
-          body='{ "body": "['$textStatus']('$workflowUrl')'
+          body="{ \"body\": \"[$textStatus]($workflowUrl)"
 
-          (( EXIT_CODE == 0 )) && body='$body\n\n[$VERSION]($tagUrl)'
-          (( EXIT_CODE == 1 )) && body='$body\n\n$REASON'
+          (( EXIT_CODE == 0 )) && body="${body}\n\n[$VERSION]($tagUrl)" || body="${body}\n\n$REASON"
 
-          body='$body" }'
+          body="${body}\" }"
           echo Comment body: $body
 
           response=$(curl --request POST --url ${{ github.event.issue.comments_url }} \
