@@ -1,33 +1,22 @@
 name: version-check
 
 on:
-  issue_comment:
+  pull_request:
     types:
-      - created
+      - synchronize
 
 jobs:
   check-version:
-    # Check that the comment came from the github-actions[bot] (from the comment.user.id)
-    if: |
-      github.event.comment.user.id == '41898282'
-      && github.event.issue.pull_request != 0
-      && github.event.issue.closed_at == 0
-      && github.event.issue.locked == 0
-      && startsWith(github.event.comment.body, '[**Version set to: ')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Compare working package version to intended version
+      - name: Compare working package version
         run: |
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           workingVer=${workingVer//\"/}
-
-          # TODO Check what the bot reported the version as
-          # Parse the body to find the version (would be after '\n\n' and inside the brackets)
-          botReportedVer=${{ github.event.comment.body }}
 
           # Check what the PR version is (from the title of the PR)
           prTitleVer=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.title')
@@ -40,9 +29,6 @@ jobs:
           echo Bot Reported Version: $botReportedVer
           echo PR Title Version: $prTitleVer
           echo Prod Version: $prodVer
-
-          # Working version should be the same as the bot reported version
-          [[ $workingVer == $botReportedVer ]]
 
           # Working version should be the same as the PR Title version
           [[ $workingVer == $prTitleVer ]]
