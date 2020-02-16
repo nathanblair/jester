@@ -54,17 +54,14 @@ jobs:
           git config user.email ${{ github.actor }}@noreply.github.com
 
           tag=$($VERSION_COMMAND)
+          [[ $? != 0 ]] && 
+            echo "::set-env name=REASON::'Could not set the version'" &&
+            echo "::set-env name=EXIT_CODE::1" && exit 1
           echo "::set-env name=VERSION::$tag"
 
         env:
           VERSION_COMMAND: ${{ github.event.comment.body }}
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-
-      - name: Mark the failure reason as not able to set the version
-        if: failure()
-        run: |
-          echo "::set-env name=REASON::'Could not set the version'"
-          echo "::set-env name=EXIT_CODE::1"
 
       - name: Push the new commit and tag
         run: |
@@ -78,6 +75,7 @@ jobs:
       - name: Mark the failure reason as not able to push the commit and tag
         if: failure()
         run: |
+          (( EXIT_CODE == 1 )) && exit 0
           echo "::set-env name=REASON::'Could not push the new commit and tag'"
           echo "::set-env name=EXIT_CODE::1"
 
@@ -90,7 +88,7 @@ jobs:
           (( EXIT_CODE == 0 )) && textStatus='**Version set to:**' || textStatus='**Failed**'
           body="{ \"body\": \"[$textStatus]($workflowUrl)"
 
-          (( EXIT_CODE == 0 )) && body="${body}\n\n[$VERSION]($tagUrl)" || body="${body}\n\n$REASON"
+          (( EXIT_CODE == 0 )) && body="${body}\n\n[$VERSION]($tagUrl)" || body="${body}\n\n${REASON//'/}"
 
           body="${body}\" }"
           echo Comment body: $body
