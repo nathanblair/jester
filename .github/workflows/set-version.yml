@@ -73,8 +73,9 @@ jobs:
 
           (( EXIT_CODE == 0 )) && textStatus='**Version set to:**' || textStatus='**Failed**'
           body="{ \"body\": \"[$textStatus]($workflowUrl)"
+          REASON=${REASON//'/}
 
-          (( EXIT_CODE == 0 )) && body="${body}\n\n[$VERSION]($tagUrl)" || body="${body}\n\n${REASON//'/}"
+          (( EXIT_CODE == 0 )) && body="${body}\n\n[$VERSION]($tagUrl)" || body="${body}\n\n${REASON}"
 
           body="${body}\" }"
           echo Comment body: $body
