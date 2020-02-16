@@ -17,22 +17,25 @@ jobs:
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           workingVer=${workingVer//\"/}
 
-          # Check that working version is a valid semver version string
-          npx semver $workingVer
-
-          repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
-          prodVer=$(npm view ${repoName//\"/} version)
+          echo Working Version: $workingVer
 
           prTitleVer="${{ github.event.pull_request.title }}"
           prTitleVer=${prTitleVer#[V|v|Version|version]}
           prTitleVer=${prTitleVer//\ /}
 
-          echo Working Version: $workingVer
           echo PR Title Version: $prTitleVer
-          echo Prod Version: $prodVer
 
           [[ $workingVer == $prTitleVer ]] || echo Working version not equal to the PR Version! && exit 1
+
+          repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
+          prodVer=$(npm view ${repoName//\"/} version)
+
+          echo Prod Version: $prodVer
+
           [[ $workingVer != $prodVer ]] || echo Working version equal to the production version! && exit 1
+
+          # Check that working version is a valid semver version string
+          npx semver $workingVer || echo Working version is not a valid semver string! && exit 1
 
           sorted=$(npx semver $workingVer $prodVer)
 
