@@ -25,59 +25,45 @@ jobs:
 
           echo PR head branch: $head_branch
           echo PR base branch: $base_branch
-          [[ $head_branch == 'develop' && $base_branch == 'prod' ]]
+          [[ $head_branch == 'develop' && $base_branch == 'prod' ]] || (
+            echo "::set-env name=REASON::'PR is not merging develop into prod'"
+            echo "::set-env name=EXIT_CODE::1" && exit 1)
         env:
           PR_URL: ${{ github.event.issue.pull_request.url }}
 
-      - name: Mark the failure reason as not able to set the version
-        if: failure()
-        run: |
-          echo "::set-env name=REASON::'PR is not merging develop into prod'"
-          echo "::set-env name=EXIT_CODE::1"
-
       - name: Checkout develop branch
-        uses: actions/checkout@v2
-        with:
-          ref: develop
-          persist-credentials: false
-
-      - name: Mark the failure reason as not able to check out the code
-        if: failure()
         run: |
-          echo "::set-env name=REASON::'Could not check out the develop branch'"
-          echo "::set-env name=EXIT_CODE::1"
-
+          git clone --branch=develop --depth=1 ${{ github.repositoryUrl }} . || (
+            echo "::set-env name=REASON::'Could not check out the develop branch'"
+            echo "::set-env name=EXIT_CODE::1" && exit 1)
 
       - name: Set version on develop branch
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
-          tag=$($VERSION_COMMAND)
-          [[ $? != 0 ]] && 
+          tag=$($VERSION_COMMAND) || (
             echo "::set-env name=REASON::'Could not set the version'" &&
-            echo "::set-env name=EXIT_CODE::1" && exit 1
+            echo "::set-env name=EXIT_CODE::1" && exit 1)
           echo "::set-env name=VERSION::$tag"
-
         env:
           VERSION_COMMAND: ${{ github.event.comment.body }}
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
       - name: Push the new commit and tag
         run: |
-          git tag $tag -a $tag -m "Auto-set to $tag"
+          echo "::set-env name=EXIT_CODE::1"
+          git tag $tag -a $tag -m "Auto-set to $tag" ||
+            echo "::set-env name=REASON::'Could not tag the new commit'" && exit 1
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
-          echo Remote URL: $remoteUrl
-          git push $remoteUrl develop
-          git push $remoteUrl $tag
 
-      - name: Mark the failure reason as not able to push the commit and tag
-        if: failure()
-        run: |
-          (( EXIT_CODE == 1 )) && exit 0
-          echo "::set-env name=REASON::'Could not push the new commit and tag'"
-          echo "::set-env name=EXIT_CODE::1"
+          git push $remoteUrl $tag || 
+            echo "::set-env name=REASON::'Could not push the new tag'" && exit 1
+          git push $remoteUrl develop || 
+            echo "::set-env name=REASON::'Could not push the new commit'" && exit 1
+
+          echo "::set-env name=EXIT_CODE::0"
 
       - name: Report back to the comment thread with the results
         if: always()
