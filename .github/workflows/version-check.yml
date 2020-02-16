@@ -21,12 +21,16 @@ jobs:
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
 
+          prTitleVer="${{ github.event.pull_request.title }}"
+          prTitleVer=${prTitleVer#[V|v|Version|version]}
+          prTitleVer=${prTitleVer//\ /}
+
           echo Working Version: $workingVer
-          echo PR Title Version: ${{ github.event.pull_request.title }}
+          echo PR Title Version: $prTitleVer
           echo Prod Version: $prodVer
 
           # Working version should be the same as the PR Title version
-          [[ $workingVer == ${{ github.event.pull_request.title }} ]] || echo Working version not equal to the PR Version! && exit 1
+          [[ $workingVer == $prTitleVer ]] || echo Working version not equal to the PR Version! && exit 1
 
           # Working version should not be the same as the production version
           [[ $workingVer != $prodVer ]] || echo Working version equal to the production version! && exit 1
