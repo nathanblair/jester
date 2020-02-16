@@ -17,7 +17,9 @@ jobs:
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           workingVer=${workingVer//\"/}
 
-          # Check the package version from npm
+          # Check that working version is a valid semver version string
+          npx semver $workingVer
+
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
 
@@ -29,10 +31,7 @@ jobs:
           echo PR Title Version: $prTitleVer
           echo Prod Version: $prodVer
 
-          # Working version should be the same as the PR Title version
           [[ $workingVer == $prTitleVer ]] || echo Working version not equal to the PR Version! && exit 1
-
-          # Working version should not be the same as the production version
           [[ $workingVer != $prodVer ]] || echo Working version equal to the production version! && exit 1
 
           sorted=$(npx semver $workingVer $prodVer)
