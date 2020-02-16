@@ -13,9 +13,7 @@ jobs:
       - name: Get the base branch of the PR
         run: |
           echo Requesting PR base branch...
-          echo $PAYLOAD
-        env:
-          PAYLOAD: ${{ toJson(github) }}
+          git clone --branch=${{ github.event.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Compare working package version
         run: |
