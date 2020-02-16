@@ -13,8 +13,7 @@ jobs:
       - name: Get the base branch of the PR
         run: |
           echo Requesting PR base branch...
-        env:
-          PAYLOAD: ${{ github.event }}
+          echo ${{ github }}
 
       - name: Compare working package version
         run: |
