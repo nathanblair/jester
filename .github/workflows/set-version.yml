@@ -35,13 +35,13 @@ jobs:
           ref: develop
           persist-credentials: false
 
-      - name: Increment version on develop branch and push
+      - name: Set version on develop branch and push
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
           tag=$($VERSION_COMMAND)
-          git tag $tag -a $tag -m "Auto-incremented to $tag"
+          git tag $tag -a $tag -m "Auto-set to $tag"
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
           echo Remote URL: $remoteUrl
@@ -65,9 +65,10 @@ jobs:
           (( EXIT_CODE == 0 )) && body='$body\n\n[$VERSION]($tagUrl)'
 
           body='$body" }'
+          echo Comment body: $body
 
-          curl --request POST --url ${{ github.event.issue.comments_url }} \
+          response=$(curl --request POST --url ${{ github.event.issue.comments_url }} \
             --header 'authorization: Bearer ${{ github.token }}' \
             --header 'content-type: application/json' \
-            --data "$body"
+            --data "$body")
 
