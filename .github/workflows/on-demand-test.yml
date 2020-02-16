@@ -17,16 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get the base branch of the PR
+      - name: Checkout the base branch of the PR
         run: |
           echo Requesting PR base branch...
           branch=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')
           echo PR base branch: $branch
-          echo "::set-env name=BRANCH::$branch"
-
-      - name: Checkout the base branch
-        run: |
-          git clone --branch=$BRANCH --depth=1 ${{ github.repositoryUrl }} .
+          git clone --branch=$branch --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Setup Node.js
         uses: actions/setup-node@v1

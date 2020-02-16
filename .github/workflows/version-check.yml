@@ -10,10 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        env:
-          PAYLOAD: ${{ github }}
+      - name: Get the base branch of the PR
+        run: |
+          echo Requesting PR base branch...
+          branch=$(curl ${{ github.event }} | jq -r '.head.ref')
+          echo PR base branch: $branch
+          git clone --branch=$branch --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Compare working package version
         run: |
@@ -51,6 +53,4 @@ jobs:
 
           # Verify that the order is correct
           [[ $sorted == $checkSort ]]
-        env:
-          PAYLOAD: ${{ github }}
 
