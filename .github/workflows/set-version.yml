@@ -50,10 +50,11 @@ jobs:
           VERSION_COMMAND: ${{ github.event.comment.body }}
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
-      - name: Push the new commit and tag
+      - name: Tag the new commit and push
         run: |
           echo "::set-env name=EXIT_CODE::1"
-          git tag $tag -a $tag -m "Auto-set to $tag" ||
+          echo Tagging as $VERSION
+          git tag $VERSION -a $VERSION -m "Auto-set to $VERSION" ||
             echo "::set-env name=REASON::'Could not tag the new commit'" && exit 1
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
