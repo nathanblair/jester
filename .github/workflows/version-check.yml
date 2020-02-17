@@ -19,36 +19,43 @@ jobs:
           echo Cloning branch: ${{ github.event.pull_request.head.ref }}
           git clone --branch=${{ github.event.pull_request.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
 
-      - name: Compare working package version
+      - name: Get working version
         run: |
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           workingVer=${workingVer//\"/}
 
           echo Working Version: $workingVer
+          echo "::set-env name=WORKING_VER::$workingVer"
 
+      - name: Compare working package version to PR Title
+        run: |
           prTitleVer="${{ github.event.pull_request.title }}"
           prTitleVer=${prTitleVer#[V|v|Version|version]}
           prTitleVer=${prTitleVer//\ /}
 
           echo PR Title Version: $prTitleVer
 
-          [[ $workingVer == $prTitleVer ]] || echo Working version not equal to the PR Version! && exit 1
+          [[ $WORKING_VER == $prTitleVer ]]
 
+      - name: Check that the working version is not the same as the production version
+        run: |
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
 
           echo Prod Version: $prodVer
 
-          [[ $workingVer != $prodVer ]] || echo Working version equal to the production version! && exit 1
+          [[ $WORKING_VER != $prodVer ]]
 
-          # Check that working version is a valid semver version string
-          npx semver $workingVer || echo Working version is not a valid semver string! && exit 1
+      - name: Check that the working version is a valid semver string
+        run: |
+          npx semver $WORKING_VER
 
-          sorted=$(npx semver $workingVer $prodVer)
+      - name: Check that the working version is greater than the production version
+        run: |
+          sorted=$(npx semver $WORKING_VER $prodVer)
 
-          # Working version should be greater than the production version
           checkSort="$prodVer
-          $workingVer"
+          $WORKING_VER"
 
           echo Sorted:
           echo $sorted
@@ -57,5 +64,5 @@ jobs:
           echo $checkSort
 
           # Verify that the order is correct
-          [[ $sorted == $checkSort ]] || echo Working version not greater than the production version! && exit 1
+          [[ $sorted == $checkSort ]]
 
