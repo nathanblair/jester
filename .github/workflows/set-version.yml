@@ -73,7 +73,8 @@ jobs:
 
           (( EXIT_CODE == 0 )) && textStatus="**Version set to:**" || textStatus="**Failed**"
           body="{ \"body\": \"[$textStatus]($workflowUrl)"
-          REASON=${REASON//'/}
+          echo $REASON
+          REASON=${REASON//\'/}
           echo $REASON
 
           (( EXIT_CODE == 0 )) && body="${body}\n\n[$VERSION]($tagUrl)" || body="${body}\n\n${REASON}"
