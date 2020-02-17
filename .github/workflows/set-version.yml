@@ -37,7 +37,7 @@ jobs:
             echo "::set-env name=REASON::'Could not check out the develop branch'"
             echo "::set-env name=EXIT_CODE::1" && exit 1)
 
-      - name: Set version on develop branch
+      - name: Set version on develop branch and push
         run: |
           echo "::set-env name=EXIT_CODE::1"
           git config user.name ${{ github.actor }}
@@ -49,10 +49,10 @@ jobs:
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
 
-          git push $remoteUrl $VERSION || 
-            echo "::set-env name=REASON::'Could not push the new tag'" && exit 1
-          git push $remoteUrl develop || 
-            echo "::set-env name=REASON::'Could not push the new commit'" && exit 1
+          git push $remoteUrl $VERSION || ( 
+            echo "::set-env name=REASON::'Could not push the new tag'" && exit 1)
+          git push $remoteUrl develop || (
+            echo "::set-env name=REASON::'Could not push the new commit'" && exit 1)
 
           echo "::set-env name=EXIT_CODE::0"
         env:
