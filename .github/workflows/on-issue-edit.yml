@@ -3,7 +3,7 @@ name: Comment Control
 on:
   issue_comment:
     types:
-      - edited
+      - created
 
 jobs:
   on-demand-test:
