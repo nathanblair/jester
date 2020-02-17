@@ -2,8 +2,7 @@ name: version-check
 
 on:
   pull_request:
-    types:
-      - synchronize
+    types: [synchronize, opened]
 
 jobs:
   check-version:

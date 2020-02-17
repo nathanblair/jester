@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Create the on-demand test comment
         run: |
-          curl --request POST --url ${{ github.event.issue.comments_url }} \
+          curl --request POST --url ${{ github.event.pull_request.comments_url }} \
             --header 'authorization: Bearer ${{ github.token }}' \
             --header 'content-type: application/json' \
             --data "run tests"
@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Create the set-version comment
         run: |
-          curl --request POST --url ${{ github.event.issue.comments_url }} \
+          curl --request POST --url ${{ github.event.pull_request.comments_url }} \
             --header 'authorization: Bearer ${{ github.token }}' \
             --header 'content-type: application/json' \
             --data "npm version"
