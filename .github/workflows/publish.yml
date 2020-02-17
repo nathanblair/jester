@@ -10,20 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout prod branch
+        run: |
+          git clone --branch=prod --depth=1 ${{ github.repositoryUrl }} .
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 13.x
-          registry-url: 'https://registry.npmjs.org'
-
+      # TODO Assign the appropriate registry to publish to
       - name: Publish
         run: |
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+          REGISTRY_URL: 'https://registry.npmjs.org'
 
       - name: Initialize docs directory
         run: |
