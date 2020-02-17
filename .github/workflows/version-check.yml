@@ -43,6 +43,7 @@ jobs:
           prodVer=$(npm view ${repoName//\"/} version)
 
           echo Prod Version: $prodVer
+          echo "::set-env name=PROD_VER::$prodVer"
 
           [[ $WORKING_VER != $prodVer ]]
 
@@ -52,9 +53,9 @@ jobs:
 
       - name: Check that the working version is greater than the production version
         run: |
-          sorted=$(npx semver $WORKING_VER $prodVer)
+          sorted=$(npx semver $WORKING_VER $PROD_VER)
 
-          checkSort="$prodVer
+          checkSort="$PROD_VER
           $WORKING_VER"
 
           echo Sorted:
