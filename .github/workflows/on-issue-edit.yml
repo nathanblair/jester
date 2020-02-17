@@ -8,8 +8,7 @@ on:
 jobs:
   on-demand-test:
     if: |
-      (github.event.comment.user.id == '41898282'
-      || github.event.comment.author_association == 'COLLABORATOR')
+      github.event.comment.author_association == 'COLLABORATOR'
       && github.event.issue.pull_request != 0
       && github.event.issue.closed_at == 0
       && github.event.issue.locked == 0
@@ -53,8 +52,7 @@ jobs:
 
   set-version:
     if: |
-      (github.event.comment.user.id == '41898282'
-      || github.event.comment.author_association == 'COLLABORATOR')
+      github.event.comment.author_association == 'COLLABORATOR'
       && github.event.issue.pull_request != 0
       && github.event.issue.closed_at == 0
       && github.event.issue.locked == 0
