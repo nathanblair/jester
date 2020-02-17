@@ -20,8 +20,7 @@ jobs:
             --header 'authorization: Bearer ${{ github.token }}' \
             --header 'content-type: application/json' \
             --data "{ \"body\": \"run tests\" }" -o /dev/null -w '%{http_code}\n')
-          echo $response
-          (( response == 200 ))
+          (( response == 201 ))
 
   create-set-version-comment:
     if: |
@@ -37,6 +36,5 @@ jobs:
             --header 'authorization: Bearer ${{ github.token }}' \
             --header 'content-type: application/json' \
             --data "{ \"body\": \"npm version\" }" -o /dev/null -w '%{http_code}\n')
-          echo $response
-          (( response == 200 ))
+          (( response == 201 ))
 
