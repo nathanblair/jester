@@ -9,7 +9,7 @@ jobs:
   check-version:
     if: |
       github.event.pull_request.head.ref == 'develop'
-      github.event.pull_request.base.ref == 'prod'
+      && github.event.pull_request.base.ref == 'prod'
 
     runs-on: ubuntu-latest
 
