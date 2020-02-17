@@ -46,10 +46,12 @@ jobs:
           tag=$($VERSION_COMMAND) || (
             echo "::set-env name=REASON::'Could not set the version'" && exit 1)
           echo "::set-env name=VERSION::$tag"
+          echo Tag variable set to: $tag
+          echo Version variable set to: $VERSION
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
 
-          git push $remoteUrl $VERSION || ( 
+          git push $remoteUrl $tag || ( 
             echo "::set-env name=REASON::'Could not push the new tag'" && exit 1)
           git push $remoteUrl develop || (
             echo "::set-env name=REASON::'Could not push the new commit'" && exit 1)
