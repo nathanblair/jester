@@ -39,32 +39,25 @@ jobs:
 
       - name: Set version on develop branch
         run: |
+          echo "::set-env name=EXIT_CODE::1"
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
           tag=$($VERSION_COMMAND) || (
-            echo "::set-env name=REASON::'Could not set the version'" &&
-            echo "::set-env name=EXIT_CODE::1" && exit 1)
+            echo "::set-env name=REASON::'Could not set the version'" && exit 1)
           echo "::set-env name=VERSION::$tag"
-        env:
-          VERSION_COMMAND: ${{ github.event.comment.body }}
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-
-      - name: Tag the new commit and push
-        run: |
-          echo "::set-env name=EXIT_CODE::1"
-          echo Tagging as $VERSION
-          git tag $VERSION -a $VERSION -m "Auto-set to $VERSION" ||
-            echo "::set-env name=REASON::'Could not tag the new commit'" && exit 1
 
           remoteUrl=https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git
 
-          git push $remoteUrl $tag || 
+          git push $remoteUrl $VERSION || 
             echo "::set-env name=REASON::'Could not push the new tag'" && exit 1
           git push $remoteUrl develop || 
             echo "::set-env name=REASON::'Could not push the new commit'" && exit 1
 
           echo "::set-env name=EXIT_CODE::0"
+        env:
+          VERSION_COMMAND: ${{ github.event.comment.body }}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
       - name: Report back to the comment thread with the results
         if: always()
