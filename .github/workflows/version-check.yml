@@ -7,13 +7,20 @@ on:
 
 jobs:
   check-version:
+    if: |
+      github.event.pull_request.head.ref == 'develop'
+      github.event.pull_request.base.ref == 'prod'
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Compare working package version
+      - name: Clone the pull-request branch
         run: |
+          echo Cloning branch: ${{ github.event.pull_request.head.ref }}
           git clone --branch=${{ github.event.pull_request.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
 
+      - name: Compare working package version
+        run: |
           workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
           workingVer=${workingVer//\"/}
 
