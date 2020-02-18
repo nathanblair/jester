@@ -1,0 +1,84 @@
+name: deploy
+
+on:
+  pull_request:
+    branches: 'release'
+    types: [closed]
+
+jobs:
+  test:
+    if: github.event.merged == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the release branch
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+
+      - name: Test
+        run: |
+          npm ci
+          npm test
+
+  publish:
+    needs: [test]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the release branch
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+
+      - name: Set version on release branch and push
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+
+          npm version ${{ github.event.pull_request.head.ref }}
+          echo "::set-env name=VERSION::${{ github.event.pull_request.head.ref }}"
+
+          git push https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git release
+          git push ${{ github.event.pull_request.head.ref }}
+
+      - name: Publish
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.npm_token }}"
+          npm publish
+
+  document:
+    needs: [publish]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the release branch
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+
+      - name: Initialize docs directory
+        run: |
+          rm -rf docs
+          git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
+          rm -rf docs/*
+
+      - name: Generate docs
+        run: |
+          npm ci
+          npm run gen-docs
+
+      - name: Update the live docs
+        run: |
+          cd docs
+
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+
+          git commit -am "Docs for $VERSION"
+          git push
+
+          DOC_TAG="docs-${{ github.event.pull_request.head.ref }}"
+          git tag $DOC_TAG
+          git push $DOC_TAG
+

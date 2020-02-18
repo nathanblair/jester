@@ -1,14 +1,13 @@
-name: check
+name: version-check
 
 on:
   pull_request:
     branches: 'release'
+    types: [opened, reopened]
+  
 
 jobs:
   check-version:
-    if: |
-      github.event.action == 'opened' || github.event.action == 'reopened'
-
     runs-on: ubuntu-latest
 
     steps:
