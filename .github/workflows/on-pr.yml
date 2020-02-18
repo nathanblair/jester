@@ -1,0 +1,107 @@
+name: Released
+
+on:
+  pull_request:
+    branches: 'release'
+
+jobs:
+  check-version:
+    if: |
+      github.event.action == 'opened' || github.event.action == 'synchronize'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the version
+        run: |
+          version="${{ github.event.pull_request.head.ref }}"
+          version=${version#[V|v|Version|version]}
+          version=${version//\ /}
+
+          echo "::set-env name=VERSION::$version"
+
+      - name: Clone the branch
+        run: |
+          git clone --branch=$VERSION --depth=1 ${{ github.repositoryUrl }} .
+
+      - name: Get the live package version
+        run: |
+          repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
+          packageVer=$(npm view ${repoName//\"/} version)
+
+          echo "::set-env name=PACKAGE_VER::$packageVer"
+
+      - name: Check that the version is not the same as the live package version
+        run: |
+          [[ $VERSION != $PACKAGE_VER ]]
+
+      - name: Check that the version is a valid semver string
+        run: |
+          npx semver $VERSION
+
+      - name: Check that the version is greater than the live package version
+        run: |
+          sorted=$(npx semver $VERSION $PACKAGE_VER)
+
+          checkSort="$PACKAGE_VER
+          $VERSION"
+
+          echo Sorted:
+          echo $sorted
+          echo
+          echo Checked Sort:
+          echo $checkSort
+
+          # Verify that the order is correct
+          [[ $sorted == $checkSort ]]
+
+  publish:
+    if: |
+      github.event.action == 'closed' && github.event.merged == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the release branch
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+
+      - name: Initialize docs directory
+        run: |
+          rm -rf docs/*
+          git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
+          rm -rf docs/*
+
+      - name: Generate docs
+        run: |
+          npm ci
+          npm run gen-docs
+
+      - name: Set version on release branch and push
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+
+          version="${{ github.event.pull_request.head.ref }}"
+          version=${version#[V|v|Version|version]}
+          version=${version//\ /}
+
+          tag=$(npm version $version)
+          echo "::set-env name=VERSION::$tag"
+
+          git push https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git release
+          git push $tag
+
+      - name: Publish
+        run: |
+          npm publish
+        env:
+          NPM_TOKEN: ${{ secrets.npm_token }}
+
+      - name: Update the live docs
+        run: |
+          cd docs
+          git add --all
+          git commit -m "Updated docs"
+          git push
+

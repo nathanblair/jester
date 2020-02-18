@@ -3,15 +3,17 @@ name: test
 on:
   push:
     branches:
-      - 'production'
+      - 'release'
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Clone the production branch
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+
 
       - name: Setup Node.js
         uses: actions/setup-node@v1
