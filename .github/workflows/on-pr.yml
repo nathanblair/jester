@@ -78,11 +78,7 @@ jobs:
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
-          version="${{ github.event.pull_request.head.ref }}"
-          version=${version#[V|v|Version|version]}
-          version=${version//\ /}
-
-          tag=$(npm version $version)
+          tag=$(npm version ${{ github.event.pull_request.head.ref }})
           echo "::set-env name=VERSION::$tag"
 
           git push https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git release
@@ -90,9 +86,8 @@ jobs:
 
       - name: Publish
         run: |
+          npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.npm_token }}"
           npm publish
-        env:
-          NPM_TOKEN: ${{ secrets.npm_token }}
 
       - name: Update the live docs
         run: |
