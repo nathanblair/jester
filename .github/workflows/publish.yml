@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout prod branch
+      - name: Set up git
         run: |
+          git config user.email "${{ github.actor }}@noreply.github.com"
+          git config user.name "${{ github.actor }}"
           git clone --branch=prod --depth=1 ${{ github.repositoryUrl }} .
 
       # TODO Assign the appropriate registry to publish to
@@ -24,10 +26,8 @@ jobs:
 
       - name: Initialize docs directory
         run: |
-          git clone --depth=1 --branch=master $REPO_URL docs
+          git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
           rm -rf docs/*
-        env:
-          REPO_URL: ${{ github.repositoryUrl }}
 
       - name: Generate docs
         run: |
