@@ -2,13 +2,13 @@ name: published
 
 on:
   pull_request:
-    branches:
-      - 'release'
+    branches: 'release'
+    types: [closed]
 
 jobs:
   publish:
     if: |
-      github.event.action == 'closed' && github.event.merged == 'true'
+      github.event.merged == 'true'
 
     runs-on: ubuntu-latest
 
