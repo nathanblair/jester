@@ -19,9 +19,7 @@ jobs:
     steps:
       - name: Checkout the head branch of the PR
         run: |
-          echo Requesting PR head branch...
           branch=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')
-          echo PR head branch: $branch
           git clone --branch=$branch --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Setup Node.js
