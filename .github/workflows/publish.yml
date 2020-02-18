@@ -1,28 +1,70 @@
 name: publish
 
 on:
-  push:
-    branches:
-      - 'prod'
+  pull_request:
+    types: [closed]
 
 jobs:
   publish:
+    if: |
+      github.event.pull_request.head.ref == 'staging'
+      && github.event.pull_request.base.ref == 'production'
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up git
+      - name: Check that the PR is from develop into staging
         run: |
-          git config user.email "${{ github.actor }}@noreply.github.com"
-          git config user.name "${{ github.actor }}"
-          git clone --branch=prod --depth=1 ${{ github.repositoryUrl }} .
+          echo Requesting PR base branch...
+          head_branch=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')
+          base_branch=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.base.ref')
 
-      # TODO Assign the appropriate registry to publish to
+          echo PR head branch: $head_branch
+          echo PR base branch: $base_branch
+          [[ $head_branch == 'staging' && $base_branch == 'production' ]]
+
+      - name: Check that the PR was merged
+        run: |
+          [[ ${{ github.event.merged }} == 'true' ]]
+
+      - name: Checkout staging branch
+        run: |
+          git clone --branch=staging --depth=1 ${{ github.repositoryUrl }} .
+
+      - name: Set version on production branch and push
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+
+          prTitleVer="${{ github.event.pull_request.title }}"
+          prTitleVer=${prTitleVer#[V|v|Version|version]}
+          prTitleVer=${prTitleVer//\ /}
+
+          tag=$(npm version $prTitleVer)
+          git tag -d $tag
+          echo "::set-env name=VERSION::$tag"
+
+          git push https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git staging
+
+      - name: Switch to production branch
+        run: |
+          git checkout production
+
+      - name: Squash merge from staging and tag
+        run: |
+          git merge --squash -m "$VERSION" staging
+          git tag $VERSION
+
+      - name: Push the squashed merge and new tag
+        run: |
+          git push https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git production
+          git push $VERSION
+
       - name: Publish
         run: |
           npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
-          REGISTRY_URL: 'https://registry.npmjs.org'
+          NPM_TOKEN: ${{ secrets.npm_token }}
 
       - name: Initialize docs directory
         run: |

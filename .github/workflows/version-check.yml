@@ -8,35 +8,25 @@ jobs:
   check-version:
     if: |
       github.event.pull_request.head.ref == 'develop'
-      && github.event.pull_request.base.ref == 'prod'
+      && github.event.pull_request.base.ref == 'staging'
 
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone the pull-request branch
-        run: |
-          echo Cloning branch: ${{ github.event.pull_request.head.ref }}
-          git clone --branch=${{ github.event.pull_request.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
-
-      - name: Get working version
-        run: |
-          workingVer=$(awk '/version/ { print $2 }' RS=',\n' package.json)
-          workingVer=${workingVer//\"/}
-
-          echo Working Version: $workingVer
-          echo "::set-env name=WORKING_VER::$workingVer"
-
-      - name: Compare working package version to PR Title
+      - name: Get PR title version
         run: |
           prTitleVer="${{ github.event.pull_request.title }}"
           prTitleVer=${prTitleVer#[V|v|Version|version]}
           prTitleVer=${prTitleVer//\ /}
 
           echo PR Title Version: $prTitleVer
+          echo "::set-env name=PR_TITLE_VER::$workingVer"
 
-          [[ $WORKING_VER == $prTitleVer ]]
+      - name: Clone the develop branch
+        run: |
+          git clone --branch=develop --depth=1 ${{ github.repositoryUrl }} .
 
-      - name: Check that the working version is not the same as the production version
+      - name: Get the production version
         run: |
           repoName=$(awk '/name/ { print $3 }' RS=',\n' package.json)
           prodVer=$(npm view ${repoName//\"/} version)
@@ -44,18 +34,20 @@ jobs:
           echo Prod Version: $prodVer
           echo "::set-env name=PROD_VER::$prodVer"
 
-          [[ $WORKING_VER != $prodVer ]]
-
-      - name: Check that the working version is a valid semver string
+      - name: Check that the PR title version is not the same as the production version
         run: |
-          npx semver $WORKING_VER
+          [[ $PR_TITLE_VER != $PROD_VER ]]
 
-      - name: Check that the working version is greater than the production version
+      - name: Check that the PR title version is a valid semver string
         run: |
-          sorted=$(npx semver $WORKING_VER $PROD_VER)
+          npx semver $PR_TITLE_VER
+
+      - name: Check that the PR title version is greater than the production version
+        run: |
+          sorted=$(npx semver $PR_TITLE_VER $PROD_VER)
 
           checkSort="$PROD_VER
-          $WORKING_VER"
+          $PR_TITLE_VER"
 
           echo Sorted:
           echo $sorted

@@ -3,7 +3,7 @@ name: test
 on:
   push:
     branches:
-      - 'prod'
+      - 'production'
 
 jobs:
   test:
