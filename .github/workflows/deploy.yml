@@ -1,0 +1,86 @@
+name: deploy
+
+on:
+  pull_request:
+    branches: 'release'
+    types: [closed]
+
+jobs:
+  test:
+    if: github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the release branch
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '13.x'
+
+      - name: Test
+        run: |
+          npm test
+
+  publish:
+    needs: [test]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up git
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+
+      - name: Set version on release branch and push
+        run: |
+          tag=${{ github.event.pull_request.head.ref }}
+          version=${tag#v}
+          npm version $version
+          echo "::set-env name=VERSION::$version"
+
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git release
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $tag
+
+      - name: Publish
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.npm_token }}"
+          npm publish
+
+  document:
+    needs: [publish]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up git
+        run: |
+          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
+
+      - name: Initialize docs directory
+        run: |
+          rm -rf docs
+          git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
+          rm -rf docs/*
+
+      - name: Generate docs
+        run: |
+          npm run gen-docs
+
+      - name: Update the live docs
+        run: |
+          cd docs
+
+          git commit -am "Docs for $VERSION"
+          DOC_TAG="${{ github.event.pull_request.head.ref }}-docs"
+          git tag $DOC_TAG
+
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $DOC_TAG
+

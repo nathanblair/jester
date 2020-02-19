@@ -1,12 +1,11 @@
-name: Comment Control
+name: on-demand
 
 on:
   issue_comment:
-    types:
-      - created
+    types: [created]
 
 jobs:
-  on-demand-test:
+  test:
     if: |
       github.event.comment.author_association == 'COLLABORATOR'
       && github.event.issue.pull_request != 0
@@ -19,9 +18,7 @@ jobs:
     steps:
       - name: Checkout the head branch of the PR
         run: |
-          echo Requesting PR head branch...
           branch=$(curl ${{ github.event.issue.pull_request.url }} | jq -r '.head.ref')
-          echo PR head branch: $branch
           git clone --branch=$branch --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Setup Node.js
