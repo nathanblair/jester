@@ -1,10 +1,9 @@
 # Your Work
-- All work should be a feature branch from `dev`
-- Make sure to rebase your work on `dev` before opening a PR to merge back into `dev`
+- All work should be from a `version` branch from `release`
+    - Or a feature branch from the latest `version` branch
+- Make sure to rebase your work off the `version` branch before opening a PR to merge back into `version`
 
 # Pull Requests
 - Merges should only come by way of PR's
-  - Rebase `dev` into `master`
-  - Squash feature branches into `dev`
-- Only `dev` should be merged into `master` (through a PR)
-- `dev` branch will get deleted whenever it is merged into master, just push another `dev` branch that has been rebased on the most recent `master`
+- Only `version` branches should be merged (squashed) into `release` (through a PR)
+- `version` branch will get deleted whenever it is merged into `release`
