@@ -3,7 +3,7 @@ name: version-check
 on:
   pull_request:
     branches: 'release'
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize, edited, unlocked]
 
 jobs:
   check-version:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Clone the branch
         run: |
-          git clone --branch=$VERSION --depth=1 ${{ github.repositoryUrl }} .
+          git clone --branch=${{ github.event.pull_request.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Get the live package version
         run: |
