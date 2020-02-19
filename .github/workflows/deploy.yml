@@ -57,11 +57,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up git
+      - name: Clone the release branch
         run: |
           git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
-          git config user.name ${{ github.actor }}
-          git config user.email ${{ github.actor }}@noreply.github.com
 
       - name: Initialize docs directory
         run: |
@@ -76,6 +74,8 @@ jobs:
       - name: Update the live docs
         run: |
           cd docs
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
 
           git commit -am "Docs for $VERSION"
           DOC_TAG="${{ github.event.pull_request.head.ref }}-docs"
