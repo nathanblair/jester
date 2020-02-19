@@ -1,6 +1,6 @@
 {
   "name": "@sonicoriginalsoftware/jester",
-  "version": "0.0.11",
+  "version": "0.0.10",
   "description": "Simple unit testing for javascript",
   "main": "index.js",
   "type": "module",
@@ -22,8 +22,6 @@
     "gen-docs": "npx jsdoc -d docs lib/*"
   },
   "devDependencies": {
-    "@types/node": "^13.7.0",
-    "c8": "^7.1.0",
-    "jsdoc": "^3.6.3"
+    "@types/node": "^13.7.0"
   }
 }

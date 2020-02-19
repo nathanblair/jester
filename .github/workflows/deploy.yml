@@ -22,7 +22,6 @@ jobs:
 
       - name: Test
         run: |
-          npm ci
           npm test
 
   publish:
@@ -58,9 +57,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the release branch
+      - name: Set up git
         run: |
           git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@noreply.github.com
 
       - name: Initialize docs directory
         run: |
@@ -70,20 +71,16 @@ jobs:
 
       - name: Generate docs
         run: |
-          npm ci
           npm run gen-docs
 
       - name: Update the live docs
         run: |
           cd docs
 
-          git config user.name ${{ github.actor }}
-          git config user.email ${{ github.actor }}@noreply.github.com
-
           git commit -am "Docs for $VERSION"
-          git push
-
-          DOC_TAG="docs-${{ github.event.pull_request.head.ref }}"
+          DOC_TAG="${{ github.event.pull_request.head.ref }}-docs"
           git tag $DOC_TAG
-          git push $DOC_TAG
+
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $DOC_TAG
 
