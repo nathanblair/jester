@@ -16,12 +16,13 @@ jobs:
 
       - name: Check that the version has the correct prefix
         run: |
-          version=${{ github.head_ref }}
-          [[ ${version:0:1} == 'v' ]]
+          head_branch=${{ github.head_ref }}
+          [[ ${head_branch:0:1} == 'v' ]]
 
       - name: Set the version
         run: |
-          echo "::set-env name=VERSION::${version#v}"
+          head_branch=${{ github.head_ref }}
+          echo "::set-env name=VERSION::${head_branch#v}"
 
       - name: Clone the branch
         run: |
