@@ -4,16 +4,20 @@ on:
   pull_request:
     branches: 'release'
     types: [opened, reopened]
-  
 
 jobs:
   check-version:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get the version
+      - name: Check that the version has the correct prefix
         run: |
-          echo "::set-env name=VERSION::${{ github.event.pull_request.head.ref }}"
+          version=${{ github.event.pull_request.head.ref }}
+          [[ ${version:0:1} == 'v' ]]
+
+      - name: Set the version
+        run: |
+          echo "::set-env name=VERSION::${version#v}"
 
       - name: Clone the branch
         run: |
@@ -26,20 +30,20 @@ jobs:
 
           echo "::set-env name=PACKAGE_VER::$packageVer"
 
-      - name: Check that the version is not the same as the live package version
+      - name: Check that the filtered version is not the same as the live package version
         run: |
           [[ $VERSION != $PACKAGE_VER ]]
 
-      - name: Check that the version is a valid semver string
+      - name: Check that the filtered version is a valid semver string
         run: |
           npx semver $VERSION
 
-      - name: Check that the version is greater than the live package version
+      - name: Check that the filtered version is greater than the live package version
         run: |
-          sorted=$(npx semver $VERSION $PACKAGE_VER)
+          sorted=$(npx semver VERSION $PACKAGE_VER)
 
           checkSort="$PACKAGE_VER
-          $VERSION"
+          VERSION"
 
           echo Sorted:
           echo $sorted
