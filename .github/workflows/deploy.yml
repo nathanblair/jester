@@ -43,8 +43,8 @@ jobs:
           npm version $tag
           echo "::set-env name=VERSION::$tag"
 
-          git push https://github.com/${{ github.repository }}.git release
-          git push https://github.com/${{ github.repository }}.git $tag
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git release
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $tag
 
       - name: Publish
         run: |
