@@ -31,20 +31,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the release branch
+      - name: Set up git
         run: |
           git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
-
-      - name: Set version on release branch and push
-        run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
+      - name: Set version on release branch and push
+        run: |
           npm version ${{ github.event.pull_request.head.ref }}
           echo "::set-env name=VERSION::${{ github.event.pull_request.head.ref }}"
 
-          git push https://${{ github.actor }}:${{ secrets.re_push }}@github.com/${{ github.repository }}.git release
-          git push ${{ github.event.pull_request.head.ref }}
+          git push origin release
+          git push origin ${{ github.event.pull_request.head.ref }}
 
       - name: Publish
         run: |
