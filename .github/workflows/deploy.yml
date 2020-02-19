@@ -39,11 +39,12 @@ jobs:
 
       - name: Set version on release branch and push
         run: |
-          npm version ${{ github.event.pull_request.head.ref }}
-          echo "::set-env name=VERSION::${{ github.event.pull_request.head.ref }}"
+          tag=${{ github.event.pull_request.head.ref }}
+          npm version $tag
+          echo "::set-env name=VERSION::$tag"
 
-          git push origin release
-          git push origin ${{ github.event.pull_request.head.ref }}
+          git push https://github.com/${{ github.repository }}.git release
+          git push https://github.com/${{ github.repository }}.git $tag
 
       - name: Publish
         run: |
