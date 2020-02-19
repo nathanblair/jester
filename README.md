@@ -1,8 +1,8 @@
 # jester
 [![](https://github.com/sonicoriginalsoftware/jester/workflows/test/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
+[![](https://github.com/sonicoriginalsoftware/jester/workflows/coverage/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
 [![](https://github.com/sonicoriginalsoftware/jester/workflows/publish/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
 [![](https://github.com/sonicoriginalsoftware/jester/workflows/document/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
-[![](https://github.com/sonicoriginalsoftware/jester/workflows/coverage/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
 
 © 2020 Nathan Blair
 
