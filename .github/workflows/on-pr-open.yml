@@ -10,9 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Why did this run?
+        run: |
+          echo Github webhook action: ${{ github.action }}
+
       - name: Check that the version has the correct prefix
         run: |
-          version=${{ github.event.pull_request.head.ref }}
+          version=${{ github.head_ref }}
           [[ ${version:0:1} == 'v' ]]
 
       - name: Set the version
@@ -21,7 +25,7 @@ jobs:
 
       - name: Clone the branch
         run: |
-          git clone --branch=${{ github.event.pull_request.head.ref }} --depth=1 ${{ github.repositoryUrl }} .
+          git clone --branch=${{ github.head_ref }} --depth=1 ${{ github.repositoryUrl }} .
 
       - name: Get the live package version
         run: |
@@ -40,10 +44,10 @@ jobs:
 
       - name: Check that the filtered version is greater than the live package version
         run: |
-          sorted=$(npx semver VERSION $PACKAGE_VER)
+          sorted=$(npx semver $VERSION $PACKAGE_VER)
 
           checkSort="$PACKAGE_VER
-          VERSION"
+          $VERSION"
 
           echo Sorted:
           echo $sorted
