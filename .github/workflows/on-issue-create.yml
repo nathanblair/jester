@@ -1,4 +1,4 @@
-name: on-demand
+name: Issue Control
 
 on:
   issue_comment:
@@ -31,8 +31,6 @@ jobs:
           npm test
           ec=$?
           echo "::set-env name=EXIT_CODE::$ec"
-        env:
-          CI: true
 
       - name: Report back to the comment thread with the results
         if: always()
