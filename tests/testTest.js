@@ -1,5 +1,5 @@
 import {strict as assert} from 'assert'
-import {Test} from '../lib/test.js'
+import {Test, Assert} from '../lib/test.js'
 import {TestLogger} from '../lib/logger.js'
 import {Status} from '../lib/status.js'
 
@@ -8,16 +8,16 @@ export class TestTest extends Test {
 
   /** @param {Status} status @param {TestLogger} logger */
   static async Run(status, logger) {
-    Test.Assert(
+    Assert(
       () => assert.throws(() => new Test()),
       'Should not be able to instantiate the base Test class',
       status,
       logger
     )
 
-    Test.Assert(
+    Assert(
       () => assert.strictEqual(
-        Test.Assert(
+        Assert(
           () => assert.strictEqual(2, 2),
           '2 should be equal to 2',
           {failedAssertions: 0, totalAssertions: 0}
@@ -28,9 +28,9 @@ export class TestTest extends Test {
       logger
     )
 
-    Test.Assert(
+    Assert(
       () => assert.strictEqual(
-        Test.Assert(
+        Assert(
           () => assert.strictEqual(4, 2),
           '4 should be equal to 2',
           {failedAssertions: 0, totalAssertions: 0}
