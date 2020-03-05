@@ -10,10 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Why did this run?
-        run: |
-          echo Github webhook action: ${{ github.action }}
-
       - name: Check that the version has the correct prefix
         run: |
           head_branch=${{ github.head_ref }}
