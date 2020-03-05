@@ -1,9 +1,9 @@
-name: version-check
+name: Version Check
 
 on:
   pull_request:
     branches: 'release'
-    types: [opened, reopened, synchronize, edited, unlocked]
+    types: [opened, reopened, edited, unlocked]
 
 jobs:
   check-version:
