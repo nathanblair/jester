@@ -1,19 +1,15 @@
-name: version-check
+name: Version Check
 
 on:
   pull_request:
     branches: 'release'
-    types: [opened, reopened, synchronize, edited, unlocked]
+    types: [opened, reopened, edited, unlocked]
 
 jobs:
   check-version:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Why did this run?
-        run: |
-          echo Github webhook action: ${{ github.action }}
-
       - name: Check that the version has the correct prefix
         run: |
           head_branch=${{ github.head_ref }}

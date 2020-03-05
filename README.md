@@ -1,8 +1,8 @@
 # jester
-[![](https://github.com/sonicoriginalsoftware/jester/workflows/test/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
-[![](https://github.com/sonicoriginalsoftware/jester/workflows/publish/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
-[![](https://github.com/sonicoriginalsoftware/jester/workflows/document/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
-[![](https://github.com/sonicoriginalsoftware/jester/workflows/coverage/badge.svg)](https://github.com/sonicoriginalsoftware/jester/actions)
+[![](https://github.com/sonicoriginalsoftware/jester/workflows/deploy/badge.svg?job=test)](https://github.com/sonicoriginalsoftware/jester/actions)
+[![](https://github.com/sonicoriginalsoftware/jester/workflows/deploy/badge.svg?job=coverage)](https://github.com/sonicoriginalsoftware/jester/actions)
+[![](https://github.com/sonicoriginalsoftware/jester/workflows/deploy/badge.svg?job=publish)](https://github.com/sonicoriginalsoftware/jester/actions)
+[![](https://github.com/sonicoriginalsoftware/jester/workflows/deploy/badge.svg?job=document)](https://github.com/sonicoriginalsoftware/jester/actions)
 
 © 2020 Nathan Blair
 
@@ -12,7 +12,7 @@ An async JS test runner - using V8 code coverage and ES6 Modules
 - None!
 
 # Running
-- `npx [experimental flags] jester`
+- `npx -n "[experimental flags]" jester`
   - On node < 13.8.0, need to use the `--experimental-modules` flag
   - All node versions need to run with the `--experimental-json-modules` flag
 - Once ES6 modules are supported without the `--experimental-modules` and `--experimental-json-modules` flags, you can just run `npx jester` (or `jester` if installed globally)
