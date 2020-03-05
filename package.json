@@ -22,6 +22,6 @@
     "gen-docs": "npx jsdoc -d docs lib/*"
   },
   "devDependencies": {
-    "@types/node": "^13.7.0"
+    "@types/node": ""
   }
 }
