@@ -57,12 +57,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone the release branch
+      - name: Clone the branch and the docs
         run: |
           git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
-
-      - name: Initialize docs directory
-        run: |
           rm -rf docs
           git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
           rm -rf docs/*
