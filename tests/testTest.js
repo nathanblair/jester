@@ -1,5 +1,6 @@
 import {strict as assert} from 'assert'
-import {Test, Assert} from '../lib/test.js'
+import {Test} from '../lib/test.js'
+import {Assert} from '../lib/assert.js'
 import {TestLogger} from '../lib/logger.js'
 import {Status} from '../lib/status.js'
 
