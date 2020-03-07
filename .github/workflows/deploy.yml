@@ -2,7 +2,7 @@ name: deploy
 
 on:
   pull_request:
-    branches: 'release'
+    branches: 'production'
     types: [closed]
 
 jobs:
@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the release branch
+      - name: Checkout the production branch
         run: |
-          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+          git clone --branch=production --depth=1 ${{ github.repositoryUrl }} .
 
       - uses: actions/setup-node@v1
         with:
@@ -32,18 +32,18 @@ jobs:
     steps:
       - name: Set up git
         run: |
-          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+          git clone --branch=production --depth=1 ${{ github.repositoryUrl }} .
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
-      - name: Set version on release branch and push
+      - name: Set version on production branch and push
         run: |
           tag=${{ github.event.pull_request.head.ref }}
           version=${tag#v}
           npm version $version
           echo "::set-env name=VERSION::$version"
 
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git release
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git production
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $tag
 
       - name: Publish
@@ -59,14 +59,14 @@ jobs:
     steps:
       - name: Clone the branch and the docs
         run: |
-          git clone --branch=release --depth=1 ${{ github.repositoryUrl }} .
+          git clone --branch=production --depth=1 ${{ github.repositoryUrl }} .
           rm -rf docs
           git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
           rm -rf docs/*
 
       - name: Generate docs
         run: |
-          npm run gen-docs
+          npm run document
 
       - name: Update the live docs
         run: |

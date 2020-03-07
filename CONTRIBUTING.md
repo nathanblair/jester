@@ -1,9 +1,8 @@
 # Your Work
-- All work should be from a `version` branch from `release`
-    - Or a feature branch from the latest `version` branch
-- Make sure to rebase your work off the `version` branch before opening a PR to merge back into `version`
+- All work should be on a `feature/*` branch based on the latest `release/*` branch
+- Make sure to rebase your work off the latest `release/*` branch before opening a PR
 
 # Pull Requests
 - Merges should only come by way of PR's
-- Only `version` branches should be merged (squashed) into `release` (through a PR)
-- `version` branch will get deleted whenever it is merged into `release`
+- Only `feature/*` branches should be merged (squashed) into `release/*` branches (through a PR)
+- `feature/*` branches will get deleted whenever it is merged into `release`
