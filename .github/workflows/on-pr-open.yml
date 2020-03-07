@@ -2,7 +2,7 @@ name: Version Check
 
 on:
   pull_request:
-    branches: 'release'
+    branches: 'production'
     types: [opened, reopened, edited, unlocked]
 
 jobs:
