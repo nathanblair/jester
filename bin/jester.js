@@ -127,8 +127,8 @@ export function Configure(config) {
 async function RunTest(testModule, testLogger, dryRun) {
   testLogger.WriteTestHead(testModule.name)
   const status = new Status()
-  if (!dryRun) await testModule.Run(status, testLogger)
-  testLogger.WriteTestFoot(testModule.name, status)
+  dryRun || await testModule.Run(status, testLogger)
+  await testLogger.WriteTestFoot(testModule.name, status)
   return status.failedAssertions !== 0 ? 1 : 0
 }
 

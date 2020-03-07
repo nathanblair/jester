@@ -11,10 +11,10 @@ export const name = 'Configure Test'
 export async function Run(status, logger) {
   /** @type {import('../../bin/jester').Config} */
   const config = { coverageDir: "coverage", format: "text", dryRun: false, testDir: "tests" }
-  Assert(
-    () => assert.doesNotThrow(() => Configure(config) ),
-    'Should be able to configure',
-    status,
-    logger
-  )
+  // Assert(
+  //   () => assert.doesNotThrow(() => Configure(config) ),
+  //   'Should be able to configure',
+  //   status,
+  //   logger
+  // )
 }
