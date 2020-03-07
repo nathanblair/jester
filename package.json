@@ -22,7 +22,7 @@
     "document": "npx jsdoc -d docs lib/*"
   },
   "engines": {
-    "node": ">=13.7.0"
+    "node": ">=13.2.0"
   },
   "devDependencies": {
     "@types/node": ""

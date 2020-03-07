@@ -127,8 +127,8 @@ export function Configure(config) {
 async function RunTest(testModule, testLogger, dryRun) {
   testLogger.WriteTestHead(testModule.name)
   const status = new Status()
-  dryRun || await testModule.Run(status, testLogger)
-  await testLogger.WriteTestFoot(testModule.name, status)
+  dryRun || (await testModule.Run(status, testLogger))
+  testLogger.WriteTestFoot(testModule.name, status)
   return status.failedAssertions !== 0 ? 1 : 0
 }
 
@@ -207,15 +207,16 @@ function GetEntryStats(path) {
 
 /**
  * @param {String} dir
- * @param {Promise<TestModule>[]} testModules
+ * @param {TestModule[]} testModules
  */
 async function FindTestModules(dir, testModules) {
+  let functionFinished
   for (const eachEntry of await GetEntries(dir)) {
     const fullPath = join(dir, eachEntry)
     const entryStats = await GetEntryStats(fullPath)
     switch (true) {
       case entryStats?.isDirectory():
-        await FindTestModules(fullPath, testModules)
+        functionFinished = new Promise(resolve => resolve(FindTestModules(fullPath, testModules)))
         break
 
       case entryStats?.isFile():
@@ -223,7 +224,9 @@ async function FindTestModules(dir, testModules) {
         /** @type {TestModule} */
         let module
         try {
-          module = await import(fullPath.replace(/\\/g, '/').replace(/c:/gi, ''))
+          module = await import(
+            fullPath.replace(/\\/g, '/').replace(/c:/gi, '')
+          )
         } catch (error) {
           console.error(error)
           break
@@ -231,12 +234,14 @@ async function FindTestModules(dir, testModules) {
 
         for (const eachExport in module) {
           if (eachExport === 'Run') {
-            testModules.push(new Promise(resolve => resolve(module)))
+            testModules.push(module)
             break
           }
         }
     }
   }
+
+  await functionFinished
 }
 
 async function jester() {

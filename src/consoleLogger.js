@@ -43,7 +43,7 @@ export class ConsoleLogger extends TestLogger {
   }
 
   /** @param {String} testClassFriendlyName @param {Status} status */
-  async WriteTestFoot(testClassFriendlyName, status) {
+  WriteTestFoot(testClassFriendlyName, status) {
     const color = status.failedAssertions === 0 ? ConsoleLogger.FgGreen : ConsoleLogger.FgRed
     console.warn(` // ${testClassFriendlyName} Summary (passed/total): ${color}${(status.totalAssertions - status.failedAssertions)}/${status.totalAssertions}${ConsoleLogger.Reset}`)
   }
