@@ -1,6 +1,7 @@
 import {strict as assert} from 'assert'
 import {Assert} from '../../lib/assert.js'
-export const name = 'Jester Test'
+
+export const id = 'Jester Test'
 
 /**
  * @param {import('../../lib/status').Status} status

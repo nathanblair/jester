@@ -17,14 +17,12 @@ An async javascript test runner - using V8 code coverage and ES6 Modules
   import {strict as assert} from 'assert'
   import {Assert} from '@sonicoriginalsoftware/jester'
 
-  export class JesterTest extends Test {
-    static testClassFriendlyName = 'Jester Test'
+  export const id = 'Jester Test' // Optional - will default to file name if not present
 
-    static async Run(status, logger) {
-      Assert(() => assert.strictEqual(2, 2), '2 should equal 2', status, logger)
+  export async function Run(status, logger) {
+    Assert(() => assert.strictEqual(2, 2), '2 should equal 2', status, logger)
 
-      Assert(() => assert.throws(() => new Test()), 'Should not be able to instantiate a new Test instance', status, logger)
-    }
+    Assert(() => assert.throws(() => new Jester()), 'Should not be able to instantiate a new Jester instance', status, logger)
   }
 ```
 

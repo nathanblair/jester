@@ -37,9 +37,9 @@ export class ConsoleLogger extends TestLogger {
     console.warn(` - ${shouldMsg} : ${result ? `${ConsoleLogger.FgGreen}PASS` : `${ConsoleLogger.FgRed}FAIL`}${ConsoleLogger.Reset}`)
   }
 
-  /** @param {String} testClassFriendlyName the name of the test class */
-  WriteTestHead(testClassFriendlyName) {
-    console.warn(testClassFriendlyName)
+  /** @param {String} testId the identifier of the test module */
+  WriteTestHead(testId) {
+    console.warn(`\n${testId}`)
   }
 
   /** @param {String} testClassFriendlyName @param {Status} status */

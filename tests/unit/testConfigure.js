@@ -2,8 +2,6 @@ import {strict as assert} from 'assert'
 import {Assert} from '../../lib/assert.js'
 import {Configure} from '../../bin/jester.js'
 
-export const name = 'Configure Test'
-
 /**
  * @param {import('../../lib/status').Status} status
  * @param {import('../../lib/logger').TestLogger} logger

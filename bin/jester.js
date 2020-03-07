@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+//import { sep as pathSep } from 'path'
+//import { writeFileSync, } from 'fs'
+//import { Session } from 'inspector'
 import { existsSync, readdir, stat } from 'fs'
 import { join } from 'path'
 import { performance } from 'perf_hooks'
@@ -11,7 +14,7 @@ import { Status } from '../lib/status.js'
 
 /** @typedef {'text' | 'md'} Format */
 /** @typedef {{ testDir: String, format: Format, dryRun: Boolean, coverageDir: String }} Config */
-/** @typedef {{Run: Function, name: String}} TestModule */
+/** @typedef {{Run: Function, id: String}} TestModule */
 
 export function showHelp() {
   console.log(
@@ -46,7 +49,6 @@ export function showHelp() {
  * @param {Config} config
  */
 export function Configure(config) {
-  console.warn('')
   const availableFormats = ['text', 'md']
   const availableOptions = ['-d', '-f', '-o', '-n', '-h', '-v']
 
@@ -120,56 +122,58 @@ export function Configure(config) {
 }
 
 /**
- * @param {TestModule} testModule
- * @param {TestLogger} testLogger
- * @param {boolean} dryRun
- */
-async function RunTest(testModule, testLogger, dryRun) {
-  testLogger.WriteTestHead(testModule.name)
-  const status = new Status()
-  dryRun || (await testModule.Run(status, testLogger))
-  testLogger.WriteTestFoot(testModule.name, status)
-  return status.failedAssertions !== 0 ? 1 : 0
-}
-
-/**
- *
  * @param {TestModule[]} testModules
- * @param {TestLogger} testLogger
- * @param {Boolean} dryRun
- * @param {String} _coverageDir
- * @returns {Promise<Number[]>} [totalFailedTests, testsRun, testingTime]
+ * @param {Config} config
+ * @returns {Promise<Number>} totalFailedTests
  */
-async function RunTests(testModules, testLogger, dryRun, _coverageDir = '') {
-  let testResults = []
+async function RunTests(testModules, config) {
+  /** @type {TestLogger} */
+  let testLogger
+  switch (config.format) {
+    case 'text':
+      testLogger = new ConsoleLogger()
+      break
+    case 'md':
+      testLogger = new MarkdownLogger()
+      break
+  }
 
-  // TODO Make coverage collection configurable
   //const session = new Session()
   //session.connect()
   //session.post('Profiler.enable')
-  // session.post('Profiler.startPreciseCoverage', {callCount: true, detailed: true})
+  //session.post('Profiler.startPreciseCoverage', {callCount: true, detailed: true})
 
+  const runTestsPromise = []
   const initialTime = performance.now()
-  testResults = await Promise.all(
-    testModules.map(testModule => RunTest(testModule, testLogger, dryRun))
-  )
+  for (const eachTestModule of testModules) {
+    testLogger.WriteTestHead(eachTestModule.id)
+    const status = new Status()
+    runTestsPromise.push(
+      new Promise(async resolve => {
+        config.dryRun || (await eachTestModule.Run(status, testLogger))
+        resolve(status.failedAssertions !== 0 ? 1 : 0)
+      })
+    )
+    testLogger.WriteTestFoot(eachTestModule.id, status)
+  }
+  const testResults = await Promise.all(runTestsPromise)
   const endingTime = performance.now()
 
-  // session.post('Profiler.takePreciseCoverage', (err, data) => {
+  //session.post('Profiler.takePreciseCoverage', (err, data) => {
   //session.post('Profiler.getBestEffortCoverage', (err, data) => {
-  //// session.post('Profiler.stopPreciseCoverage')
-  //if (err) return console.error(err)
-
-  //writeFileSync(
-  //`${_coverageDir}${pathSep}coverage-${Date.now()}.json`,
-  //JSON.stringify(data)
-  //)
+  //if (err) {console.error(err); return}
+  //writeFileSync(`${_coverageDir}${pathSep}coverage-${Date.now()}.json`, JSON.stringify(data))
   //})
 
   const totalFailedTests = testResults.reduce((a, b) => a + b, 0)
   const totalTestsRun = testResults.length
+  testLogger.WriteTestSummary(
+    endingTime - initialTime,
+    totalFailedTests,
+    totalTestsRun
+  )
 
-  return [totalFailedTests, totalTestsRun, endingTime - initialTime]
+  return totalFailedTests
 }
 
 /**
@@ -178,7 +182,7 @@ async function RunTests(testModules, testLogger, dryRun, _coverageDir = '') {
  * @returns {Promise<String[]>}
  */
 function GetEntries(dir) {
-  console.warn(`Looking in: ${dir}`)
+  //console.warn(`Looking in: ${dir}`)
   try {
     return new Promise((resolve, reject) => {
       readdir(dir, (err, entries) => (err ? reject(err) : resolve(entries)))
@@ -214,33 +218,28 @@ async function FindTestModules(dir, testModules) {
   for (const eachEntry of await GetEntries(dir)) {
     const fullPath = join(dir, eachEntry)
     const entryStats = await GetEntryStats(fullPath)
-    switch (true) {
-      case entryStats?.isDirectory():
-        functionFinished = new Promise(resolve => resolve(FindTestModules(fullPath, testModules)))
-        break
+    if (entryStats?.isDirectory()) {
+      functionFinished = new Promise(resolve =>
+        resolve(FindTestModules(fullPath, testModules))
+      )
+    } else if (entryStats?.isFile()) {
+      //console.warn(`Found file: ${fullPath}`)
+      /** @type {TestModule} */
+      let module
+      try {
+        module = await import(fullPath.replace(/\\/g, '/').replace(/c:/gi, ''))
+      } catch (error) {
+        console.error(error)
+        continue
+      }
 
-      case entryStats?.isFile():
-        console.warn(`Found file: ${fullPath}`)
-        /** @type {TestModule} */
-        let module
-        try {
-          module = await import(
-            fullPath.replace(/\\/g, '/').replace(/c:/gi, '')
-          )
-        } catch (error) {
-          console.error(error)
-          break
-        }
-
-        for (const eachExport in module) {
-          if (eachExport === 'Run') {
-            testModules.push(module)
-            break
-          }
-        }
+      if (module['Run']) {
+        if (!module['id']) module = { ...module, id: eachEntry }
+        console.warn(`Found module: ${module['id']}`)
+        testModules.push(module)
+      }
     }
   }
-
   await functionFinished
 }
 
@@ -255,50 +254,24 @@ async function jester() {
   if (Configure(config) !== null) return 0
 
   let err = null
-  /** @type {Promise<TestModule>[]} */
-  let testModulePromises = []
   /** @type {TestModule[]} */
   let testModules = []
-
-  await FindTestModules(config.testDir, testModulePromises)
   try {
-    testModules = await Promise.all(testModulePromises)
+    await FindTestModules(config.testDir, testModules)
   } catch (error) {
     console.error(error)
     err = -1
   }
   if (err !== null) return err
 
-  console.warn(`Found ${testModules.length} test modules`)
-  console.warn('')
-
-  let testsRun = 0
   let failedTests = 0
-  let testingTime = 0.0
-  /** @type {TestLogger} */
-  let testLogger
-  switch (config.format) {
-    case 'text':
-      testLogger = new ConsoleLogger()
-      break
-    case 'md':
-      testLogger = new MarkdownLogger()
-      break
-  }
-
   try {
-    [failedTests, testsRun, testingTime] = await RunTests(
-      testModules,
-      testLogger,
-      config.dryRun,
-      config.coverageDir
-    )
+    failedTests = await RunTests(testModules, config)
   } catch (error) {
     console.log(error)
     err = -1
   }
 
-  testLogger.WriteTestSummary(testingTime, failedTests, testsRun)
   return err || failedTests
 }
 

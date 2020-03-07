@@ -11,12 +11,12 @@ export class MarkdownLogger extends TestLogger {
       console.warn(` - [${result ? "X" : " "}] ${shouldMsg}`)
   }
 
-  /** @param {String} testClassFriendlyName the name of the test class */
-  WriteTestHead(testClassFriendlyName) {
+  /** @param {String} id the identifier of the test module */
+  WriteTestHead(id) {
       console.warn(
 `
 <details>
-<summary>${testClassFriendlyName}</summary>
+<summary>${id}</summary>
 `
       )
   }
