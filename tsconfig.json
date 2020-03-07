@@ -16,15 +16,7 @@
     "allowSyntheticDefaultImports": true,
     "outDir": "dist"
   },
-  "files": [
-    "index.js"
-  ],
-  "include": [
-    "bin",
-    "lib",
-    "tests"
-  ],
-  "exclude": [
-    "coverage", "node_modules"
-  ]
+  "files": ["index.js"],
+  "include": ["bin", "lib", "tests"],
+  "exclude": ["coverage", "node_modules"]
 }

@@ -1,18 +1,17 @@
 #!/usr/bin/env node
 
-import {existsSync, readdir, stat, writeFileSync} from 'fs'
-import {Session} from 'inspector';
-import {join, sep as pathSep} from 'path'
-import {performance} from 'perf_hooks'
-import {TestLogger} from '../lib/logger.js'
-import {ConsoleLogger} from '../src/consoleLogger.js'
-import {MarkdownLogger} from '../src/markdownLogger.js'
-import {Test} from '../lib/test.js'
+import { existsSync, readdir, stat } from 'fs'
+import { join } from 'path'
+import { performance } from 'perf_hooks'
+import { TestLogger } from '../lib/logger.js'
+import { ConsoleLogger } from '../src/consoleLogger.js'
+import { MarkdownLogger } from '../src/markdownLogger.js'
 import pkg from '../package.json'
-import {Status} from '../lib/status.js'
+import { Status } from '../lib/status.js'
 
 /** @typedef {'text' | 'md'} Format */
 /** @typedef {{ testDir: String, format: Format, dryRun: Boolean, coverageDir: String }} Config */
+/** @typedef {{Run: Function, name: String}} TestModule */
 
 function showHelp() {
   console.log(
@@ -121,163 +120,154 @@ function Configure(config) {
 }
 
 /**
- * @param {typeof Test} testModule
+ * @param {TestModule} testModule
  * @param {TestLogger} testLogger
  * @param {boolean} dryRun
  */
 async function RunTest(testModule, testLogger, dryRun) {
-  testLogger.WriteTestHead(testModule.testClassFriendlyName)
+  testLogger.WriteTestHead(testModule.name)
   const status = new Status()
   if (!dryRun) await testModule.Run(status, testLogger)
-  testLogger.WriteTestFoot(testModule.testClassFriendlyName, status)
+  testLogger.WriteTestFoot(testModule.name, status)
   return status.failedAssertions !== 0 ? 1 : 0
 }
 
 /**
  *
- * @param {typeof Test[]} testClasses
+ * @param {TestModule[]} testModules
  * @param {TestLogger} testLogger
  * @param {Boolean} dryRun
- * @param {String} coverageDir
+ * @param {String} _coverageDir
  * @returns {Promise<Number[]>} [totalFailedTests, testsRun, testingTime]
  */
-async function RunTests(testClasses, testLogger, dryRun, coverageDir) {
+async function RunTests(testModules, testLogger, dryRun, _coverageDir = '') {
   let testResults = []
-  const session = new Session()
-  session.connect()
-  session.post('Profiler.enable')
+
+  // TODO Make coverage collection configurable
+  //const session = new Session()
+  //session.connect()
+  //session.post('Profiler.enable')
   // session.post('Profiler.startPreciseCoverage', {callCount: true, detailed: true})
 
-  const initialTime = performance.now();
-  testResults = await Promise.all(testClasses.map(eachTest => RunTest(eachTest, testLogger, dryRun)))
+  const initialTime = performance.now()
+  testResults = await Promise.all(
+    testModules.map(testModule => RunTest(testModule, testLogger, dryRun))
+  )
   const endingTime = performance.now()
 
   // session.post('Profiler.takePreciseCoverage', (err, data) => {
-  session.post('Profiler.getBestEffortCoverage', (err, data) => {
-    // session.post('Profiler.stopPreciseCoverage')
-    if (err) return console.error(err)
+  //session.post('Profiler.getBestEffortCoverage', (err, data) => {
+  //// session.post('Profiler.stopPreciseCoverage')
+  //if (err) return console.error(err)
 
-    // TODO Empty out the directory
-    writeFileSync(`${coverageDir}${pathSep}coverage-${Date.now()}.json`, JSON.stringify(data))
-  })
+  //writeFileSync(
+  //`${_coverageDir}${pathSep}coverage-${Date.now()}.json`,
+  //JSON.stringify(data)
+  //)
+  //})
 
-  const totalFailedTests = testResults.reduce((a, b) => (a + b), 0)
+  const totalFailedTests = testResults.reduce((a, b) => a + b, 0)
   const totalTestsRun = testResults.length
 
-  return [totalFailedTests, totalTestsRun, (endingTime - initialTime)]
+  return [totalFailedTests, totalTestsRun, endingTime - initialTime]
 }
 
 /**
  * @param {String} fullPath
+ *
+ * @returns {Promise<TestModule[]>}
  */
-function GetPathStats(fullPath) {
-  return new Promise((resolve, reject) => {
-    stat(fullPath, (err, stats) => {if (err) reject(err); resolve(stats)})
-  })
-}
-
-/**
- * @param {String} module a module path
- * @param {typeof Test[]} testClasses
- */
-async function ImportTestClasses(module, testClasses) {
-  module = module.replace(/\\/g, '/')
-  module = module.replace(/c:/ig, '')
-  let moduleExports = null
+async function EntryCallBack(fullPath) {
+  /** @type {import('fs').Stats} */
+  let entryStats = undefined
   try {
-    moduleExports = await import(module)
-  } catch (error) {
-    console.error(error)
-    return
-  }
-
-  for (const eachExportName in moduleExports) {
-    const eachExport = moduleExports[eachExportName]
-    if (eachExport.__proto__.name === Test.name) testClasses.push(eachExport)
-  }
-  return
-}
-
-/**
- * @param {String} fullPath
- * @param {typeof Test[]} testClasses
- */
-async function EntryCallBack(fullPath, testClasses) {
-  /** @type {import('fs').Stats?} */
-  let entryStats = null
-  try {
-    entryStats = await GetPathStats(fullPath)
+    entryStats = await new Promise((resolve, reject) => {
+      stat(fullPath, (err, stats) => (err ? reject(err) : resolve(stats)))
+    })
   } catch (error) {
     console.error(error)
   }
+
+  /** @type {TestModule[]} */
+  let modules = []
 
   switch (true) {
-    case entryStats === null:
-      break
+    case entryStats.isDirectory():
+      return FindTestModules(fullPath)
 
     case entryStats.isFile():
       console.warn(`Found file: ${fullPath}`)
-      return await ImportTestClasses(fullPath, testClasses)
+      let module
+      try {
+        module = await import(fullPath.replace(/\\/g, '/').replace(/c:/gi, ''))
+      } catch (error) {
+        console.error(error)
+        break
+      }
 
-    case entryStats.isDirectory():
-      return await FindTestClasses(fullPath, testClasses)
+      for (const eachExport in module) {
+        if (eachExport === 'Run') modules.push(module)
+      }
   }
+
+  return modules
 }
 
 /**
  * @param {String} dir
+ *
+ * @returns {Promise<TestModule[]>}
  */
-function GetEntriesInDir(dir) {
-  return new Promise((resolve, reject) => {
-    readdir(dir, (err, entries) => {if (err) reject(err); resolve(entries)})
-  })
-}
-
-/**
- * @param {String} dir
- * @param {typeof Test[]} testClasses
- */
-async function FindTestClasses(dir, testClasses) {
+async function FindTestModules(dir) {
   console.warn(`Looking in: ${dir}`)
   let entries = []
   try {
-    entries = await GetEntriesInDir(dir)
+    let entryPromise = new Promise((resolve, reject) => {
+      readdir(dir, (err, entries) => (err ? reject(err) : resolve(entries)))
+    })
+    entries = await entryPromise
   } catch (error) {
     console.error(error)
   }
 
-  /** @type {Promise<void>[]} */
+  /** @type {Promise<TestModule[]>[]} */
   let entryPromises = []
-  entries.forEach(entry =>
-    entryPromises.push(new Promise(async (resolve, _) =>
-      resolve(await EntryCallBack(join(dir, entry), testClasses))
-    ))
-  )
+  for (const eachEntry of entries) {
+    entryPromises.push(
+      new Promise(async (resolve, _) =>
+        resolve(await EntryCallBack(join(dir, eachEntry)))
+      )
+    )
+  }
 
-  await Promise.all(entryPromises)
-  return
+  return Promise.all(entryPromises)
 }
 
-/**
- *
- */
 async function jester() {
   /** @type {Config} */
-  const config = {testDir: 'tests', format: 'text', dryRun: false, coverageDir: 'coverage'}
+  const config = {
+    testDir: 'tests',
+    format: 'text',
+    dryRun: false,
+    coverageDir: 'coverage'
+  }
   if (Configure(config) !== null) return 0
 
   let err = null
-  /** @type {typeof Test[]} */
-  let testClasses = []
+  /** @type {TestModule[]} */
+  let testModules = []
   try {
-    await FindTestClasses(config.testDir, testClasses)
+    testModules = await FindTestModules(config.testDir)
   } catch (error) {
     console.error(error)
     err = -1
   }
   if (err !== null) return err
 
-  console.warn(`Found ${testClasses.length} test modules`)
+  console.warn(`Found ${testModules.length} test modules`)
+  for (const eachModule in testModules) {
+    console.log(`Test module: ${testModules[eachModule].name}`)
+  }
   console.warn('')
 
   let testsRun = 0
@@ -295,8 +285,12 @@ async function jester() {
   }
 
   try {
-    [failedTests, testsRun, testingTime] =
-      await RunTests(testClasses, testLogger, config.dryRun, config.coverageDir)
+    [failedTests, testsRun, testingTime] = await RunTests(
+      testModules,
+      testLogger,
+      config.dryRun,
+      config.coverageDir
+    )
   } catch (error) {
     console.log(error)
     err = -1

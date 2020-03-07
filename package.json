@@ -1,7 +1,8 @@
 {
   "name": "@sonicoriginalsoftware/jester",
-  "description": "Simple unit testing for javascript",
+  "description": "Simple testing framework for javascript",
   "main": "index.js",
+  "version": "0.0.14",
   "type": "module",
   "bin": "./bin/jester.js",
   "keywords": [
@@ -17,8 +18,8 @@
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
     "test": "node --no-warnings --experimental-json-modules bin/jester.js",
-    "gen-coverage": "npx c8 --temp-directory=coverage report",
-    "gen-docs": "npx jsdoc -d docs lib/*"
+    "coverage": "npx c8 --temp-directory=coverage report",
+    "document": "npx jsdoc -d docs lib/*"
   },
   "devDependencies": {
     "@types/node": ""
