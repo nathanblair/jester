@@ -4,7 +4,19 @@
 			"path": "."
 		}
   ],
-  "settings": {
-    "javascript.implicitProjectConfig.checkJs": true,
+  "launch": {
+    "configurations": [
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch Program",
+        "runtimeArgs": ["--experimental-json-modules", "--harmony"],
+        "skipFiles": [
+          "<node_internals>/**"
+        ],
+        "program": "${workspaceFolder}\\bin\\jester.js"
+      }
+    ],
+    "compounds": []
   }
 }

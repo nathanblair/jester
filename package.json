@@ -2,7 +2,7 @@
   "name": "@sonicoriginalsoftware/jester",
   "description": "Simple testing framework for javascript",
   "main": "index.js",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "type": "module",
   "bin": "./bin/jester.js",
   "keywords": [
@@ -17,12 +17,11 @@
   "license": "MIT License",
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
-    "test": "node --no-warnings --experimental-json-modules bin/jester.js",
+    "test": "node --no-warnings --experimental-json-modules --harmony bin/jester.js",
     "coverage": "npx c8 --temp-directory=coverage report",
     "document": "npx jsdoc -d docs lib/*"
   },
   "devDependencies": {
     "@types/node": ""
-  },
-  "version": "0.0.15"
+  }
 }

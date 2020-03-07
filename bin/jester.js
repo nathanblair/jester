@@ -13,7 +13,7 @@ import { Status } from '../lib/status.js'
 /** @typedef {{ testDir: String, format: Format, dryRun: Boolean, coverageDir: String }} Config */
 /** @typedef {{Run: Function, name: String}} TestModule */
 
-function showHelp() {
+export function showHelp() {
   console.log(
     `
     Name:         ${pkg.name}
@@ -45,7 +45,7 @@ function showHelp() {
 /**
  * @param {Config} config
  */
-function Configure(config) {
+export function Configure(config) {
   console.warn('')
   const availableFormats = ['text', 'md']
   const availableOptions = ['-d', '-f', '-o', '-n', '-h', '-v']
@@ -173,74 +173,70 @@ async function RunTests(testModules, testLogger, dryRun, _coverageDir = '') {
 }
 
 /**
- * @param {String} fullPath
+ * @param {String} dir
  *
- * @returns {Promise<TestModule[]>}
+ * @returns {Promise<String[]>}
  */
-async function EntryCallBack(fullPath) {
-  /** @type {import('fs').Stats} */
-  let entryStats = undefined
+function GetEntries(dir) {
+  console.warn(`Looking in: ${dir}`)
   try {
-    entryStats = await new Promise((resolve, reject) => {
-      stat(fullPath, (err, stats) => (err ? reject(err) : resolve(stats)))
+    return new Promise((resolve, reject) => {
+      readdir(dir, (err, entries) => (err ? reject(err) : resolve(entries)))
     })
   } catch (error) {
     console.error(error)
+    return Promise.resolve([])
   }
+}
 
-  /** @type {TestModule[]} */
-  let modules = []
-
-  switch (true) {
-    case entryStats.isDirectory():
-      return FindTestModules(fullPath)
-
-    case entryStats.isFile():
-      console.warn(`Found file: ${fullPath}`)
-      let module
-      try {
-        module = await import(fullPath.replace(/\\/g, '/').replace(/c:/gi, ''))
-      } catch (error) {
-        console.error(error)
-        break
-      }
-
-      for (const eachExport in module) {
-        if (eachExport === 'Run') modules.push(module)
-      }
+/**
+ * @param {String} path
+ *
+ * @returns {Promise<import('fs').Stats?>}
+ */
+function GetEntryStats(path) {
+  try {
+    return new Promise((resolve, reject) => {
+      stat(path, (err, stats) => (err ? reject(err) : resolve(stats)))
+    })
+  } catch (error) {
+    console.error(error)
+    return Promise.resolve(null)
   }
-
-  return modules
 }
 
 /**
  * @param {String} dir
- *
- * @returns {Promise<TestModule[]>}
+ * @param {Promise<TestModule>[]} testModules
  */
-async function FindTestModules(dir) {
-  console.warn(`Looking in: ${dir}`)
-  let entries = []
-  try {
-    let entryPromise = new Promise((resolve, reject) => {
-      readdir(dir, (err, entries) => (err ? reject(err) : resolve(entries)))
-    })
-    entries = await entryPromise
-  } catch (error) {
-    console.error(error)
-  }
+async function FindTestModules(dir, testModules) {
+  for (const eachEntry of await GetEntries(dir)) {
+    const fullPath = join(dir, eachEntry)
+    const entryStats = await GetEntryStats(fullPath)
+    switch (true) {
+      case entryStats?.isDirectory():
+        await FindTestModules(fullPath, testModules)
+        break
 
-  /** @type {Promise<TestModule[]>[]} */
-  let entryPromises = []
-  for (const eachEntry of entries) {
-    entryPromises.push(
-      new Promise(async (resolve, _) =>
-        resolve(await EntryCallBack(join(dir, eachEntry)))
-      )
-    )
-  }
+      case entryStats?.isFile():
+        console.warn(`Found file: ${fullPath}`)
+        /** @type {TestModule} */
+        let module
+        try {
+          module = await import(fullPath.replace(/\\/g, '/').replace(/c:/gi, ''))
+        } catch (error) {
+          console.error(error)
+          break
+        }
 
-  return Promise.all(entryPromises)
+        for (const eachExport in module) {
+          if (eachExport === 'Run') {
+            testModules.push(new Promise(resolve => resolve(module)))
+            break
+          }
+        }
+    }
+  }
 }
 
 async function jester() {
@@ -254,10 +250,11 @@ async function jester() {
   if (Configure(config) !== null) return 0
 
   let err = null
-  /** @type {TestModule[]} */
+  /** @type {Promise<TestModule>[]} */
   let testModules = []
+  await FindTestModules(config.testDir, testModules)
   try {
-    testModules = await FindTestModules(config.testDir)
+    testModules = await Promise.all(testModules)
   } catch (error) {
     console.error(error)
     err = -1
@@ -265,9 +262,6 @@ async function jester() {
   if (err !== null) return err
 
   console.warn(`Found ${testModules.length} test modules`)
-  for (const eachModule in testModules) {
-    console.log(`Test module: ${testModules[eachModule].name}`)
-  }
   console.warn('')
 
   let testsRun = 0
