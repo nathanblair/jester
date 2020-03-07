@@ -23,7 +23,7 @@ export function showHelp() {
     License:      ${pkg.license}
 
     Usage:
-        (npx) jester [options]
+        (npx [-n "--harmony [experimental-flags]"]) jester [options]
 
     Options:
         -h                    show this message
@@ -251,10 +251,13 @@ async function jester() {
 
   let err = null
   /** @type {Promise<TestModule>[]} */
+  let testModulePromises = []
+  /** @type {TestModule[]} */
   let testModules = []
-  await FindTestModules(config.testDir, testModules)
+
+  await FindTestModules(config.testDir, testModulePromises)
   try {
-    testModules = await Promise.all(testModules)
+    testModules = await Promise.all(testModulePromises)
   } catch (error) {
     console.error(error)
     err = -1

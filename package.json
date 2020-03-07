@@ -21,6 +21,9 @@
     "coverage": "npx c8 --temp-directory=coverage report",
     "document": "npx jsdoc -d docs lib/*"
   },
+  "engines": {
+    "node": ">=13.7.0"
+  },
   "devDependencies": {
     "@types/node": ""
   }
