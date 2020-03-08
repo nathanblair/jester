@@ -3,7 +3,7 @@ name: PR Test
 on:
   pull_request:
     branches: 'production'
-    types: [synchronize]
+    types: [synchronize, opened, reopened, edited, unlocked]
 
 jobs:
   test:

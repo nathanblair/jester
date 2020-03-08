@@ -3,14 +3,6 @@ import {Status} from '../lib/status.js'
 
 /** A markdown implementation of the TestLogger */
 export class MarkdownLogger extends TestLogger {
-  /**
-    * @param {Boolean} result the number of failed assertions
-    * @param {String} shouldMsg statement of what it means if the tests `passes` or `fails`
-    */
-  WriteTestResult(result, shouldMsg) {
-      console.warn(` - [${result ? "X" : " "}] ${shouldMsg}`)
-  }
-
   /** @param {String} id the identifier of the test module */
   WriteTestHead(id) {
       console.warn(
@@ -21,8 +13,17 @@ export class MarkdownLogger extends TestLogger {
       )
   }
 
-  /** @param {String} _testClassFriendlyName @param {Status} _status */
-  WriteTestFoot(_testClassFriendlyName, _status) {
+  /**
+    * @param {Boolean} result the number of failed assertions
+    * @param {String} shouldMsg statement of what it means if the tests `passes` or `fails`
+    */
+  WriteTestResult(result, shouldMsg) {
+      console.warn(` - [${result ? "X" : " "}] ${shouldMsg}`)
+  }
+
+  /** @param {String} id @param {Status} status */
+  WriteTestFoot(id, status) {
+    console.warn(`### ${id} Summary (passed/total): ${(status.totalAssertions - status.failedAssertions)}/${status.totalAssertions}`)
     console.warn(`</details>`)
   }
 
