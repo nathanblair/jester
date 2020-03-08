@@ -31,7 +31,7 @@ export class ConsoleLogger extends TestLogger {
 
   /** @param {String} testId the identifier of the test module */
   WriteTestHead(testId) {
-    console.warn(`\n${testId}`)
+    console.log(`${testId}`)
   }
 
   /**
@@ -39,18 +39,17 @@ export class ConsoleLogger extends TestLogger {
     * @param {String} shouldMsg statement of what it means if the tests `passes` or `fails`
     */
   WriteTestResult(result, shouldMsg) {
-    console.warn(` - ${shouldMsg} : ${result ? `${ConsoleLogger.FgGreen}PASS` : `${ConsoleLogger.FgRed}FAIL`}${ConsoleLogger.Reset}`)
+    console.log(` - ${shouldMsg} : ${result ? `${ConsoleLogger.FgGreen}PASS` : `${ConsoleLogger.FgRed}FAIL`}${ConsoleLogger.Reset}`)
   }
 
   /** @param {String} testClassFriendlyName @param {Status} status */
   WriteTestFoot(testClassFriendlyName, status) {
     const color = status.failedAssertions === 0 ? ConsoleLogger.FgGreen : ConsoleLogger.FgRed
-    console.warn(` // ${testClassFriendlyName} Summary (passed/total): ${color}${(status.totalAssertions - status.failedAssertions)}/${status.totalAssertions}${ConsoleLogger.Reset}`)
+    console.log(`  ↳ ${testClassFriendlyName} Summary (passed/total): ${color}${(status.totalAssertions - status.failedAssertions)}/${status.totalAssertions}${ConsoleLogger.Reset}\n`)
   }
 
   /** @param {Number} testingTime @param {Number} failedTests @param {number} totalTests */
   WriteTestSummary(testingTime, failedTests, totalTests) {
-    console.log('')
     console.log(`Testing took ${testingTime.toFixed(1)} ms`)
     console.log('')
     const color = failedTests === 0 ? ConsoleLogger.FgGreen : ConsoleLogger.FgRed
