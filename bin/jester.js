@@ -263,6 +263,7 @@ async function jester() {
     err = -1
   }
   if (err !== null) return err
+  console.warn()
 
   let failedTests = 0
   try {
