@@ -1,7 +1,7 @@
 import {strict as assert} from 'assert'
 import {Assert} from '../../lib/assert.js'
 
-export const id = 'Jester Test'
+export const id = 'Assert Test'
 
 /**
  * @param {import('../../lib/status').Status} status
@@ -30,6 +30,14 @@ export async function Run(status, logger) {
       ),
       false),
     'Should be able to fail incorrect assertions',
+    status,
+    logger
+  )
+
+  const dummy = 2
+  Assert(
+    () => assert.strictEqual(dummy, 2),
+    'Should be able to assert on module variables',
     status,
     logger
   )
