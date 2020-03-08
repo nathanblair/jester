@@ -39,7 +39,7 @@ jobs:
       - name: Set version on production branch and push
         run: |
           head_branch=${{ github.head_ref }}
-          tag=${head_branch#release\/}"
+          tag=${head_branch#release\/}
           version=${tag#v}
           npm version $version
           echo "::set-env name=VERSION::$version"
