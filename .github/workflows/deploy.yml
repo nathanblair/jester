@@ -42,7 +42,6 @@ jobs:
           tag=${head_branch#release\/}
           version=${tag#v}
           npm version $version
-          echo "::set-env name=VERSION::$version"
 
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git production
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $tag
@@ -72,11 +71,14 @@ jobs:
       - name: Update the live docs
         run: |
           cd docs
+          ls -lA
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
+          head_branch=${{ github.head_ref }}
+          VERSION=${head_branch#release\/}
           git commit -am "Docs for $VERSION"
-          DOC_TAG="${{ github.event.pull_request.head.ref }}-docs"
+          DOC_TAG="$VERSION-docs"
           git tag $DOC_TAG
 
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master

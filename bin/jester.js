@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/** @private */
+
 //import { sep as pathSep } from 'path'
 //import { writeFileSync, } from 'fs'
 //import { Session } from 'inspector'

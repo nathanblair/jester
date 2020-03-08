@@ -1,5 +1,4 @@
 import {TestLogger} from '../lib/logger.js'
-import {Status} from '../lib/status.js'
 
 /** A console implementation of the TestLogger */
 export class ConsoleLogger extends TestLogger {
@@ -42,7 +41,7 @@ export class ConsoleLogger extends TestLogger {
     console.log(` - ${shouldMsg} : ${result ? `${ConsoleLogger.FgGreen}PASS` : `${ConsoleLogger.FgRed}FAIL`}${ConsoleLogger.Reset}`)
   }
 
-  /** @param {String} testClassFriendlyName @param {Status} status */
+  /** @param {String} testClassFriendlyName @param {import('../lib/status').Status} status */
   WriteTestFoot(testClassFriendlyName, status) {
     const color = status.failedAssertions === 0 ? ConsoleLogger.FgGreen : ConsoleLogger.FgRed
     console.log(`  ↳ ${testClassFriendlyName} Summary (passed/total): ${color}${(status.totalAssertions - status.failedAssertions)}/${status.totalAssertions}${ConsoleLogger.Reset}\n`)

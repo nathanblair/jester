@@ -19,7 +19,7 @@
   "scripts": {
     "test": "node --no-warnings --experimental-json-modules --harmony bin/jester.js",
     "coverage": "npx c8 --temp-directory=coverage report",
-    "document": "npx jsdoc -d docs lib/*"
+    "document": "npx typedoc --ignoreCompilerErrors --out docs --theme 'minimal' --excludeExternals --excludeNotExported --inputFiles 'lib/assert.js'"
   },
   "engines": {
     "node": ">=13.2.0"
