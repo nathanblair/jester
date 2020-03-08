@@ -77,7 +77,8 @@ jobs:
 
           head_branch=${{ github.head_ref }}
           VERSION=${head_branch#release\/}
-          git commit -am "Docs for $VERSION"
+          git add --all
+          git commit -m "Docs for $VERSION"
           DOC_TAG="$VERSION-docs"
           git tag $DOC_TAG
 
