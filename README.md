@@ -8,7 +8,7 @@
 
 An async javascript test runner - using V8 code coverage and ES6 Modules
 
-* `jester` walks your `tests` folder (change using the `-d` flag) asynchronously to round up all your Test modules then executes them all asynchronously
+* `jester` walks your `tests` folder (change using the `-d` flag) asynchronously to round up all your test modules then executes them all asynchronously
 * It uses `performance` from `perf_hooks` to time the execution of all test executions
 * Logging-level configuration will be coming in a future release
 * It also uses [Node Inspector](https://nodejs.org/api/inspector.html#inspector_class_inspector_session) and [Session Profiler](https://chromedevtools.github.io/devtools-protocol/v8/Profiler) to generate code coverage in json format (configurable in a future release)
