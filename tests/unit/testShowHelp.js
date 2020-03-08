@@ -1,6 +1,6 @@
-import {strict as assert} from 'assert'
-import {Assert} from '../../lib/assert.js'
-import {showHelp} from '../../bin/jester.js'
+//import {strict as assert} from 'assert'
+//import {Assert} from '../../lib/assert.js'
+//import {showHelp} from '../../bin/jester.js'
 
 export const id = 'Show Help Test'
 
