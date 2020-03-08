@@ -1,5 +1,4 @@
 import {TestLogger} from '../lib/logger.js'
-import {Status} from '../lib/status.js'
 
 /** A markdown implementation of the TestLogger */
 export class MarkdownLogger extends TestLogger {
@@ -20,17 +19,15 @@ export class MarkdownLogger extends TestLogger {
       console.log(` - [${result ? "X" : " "}] ${shouldMsg}`)
   }
 
-  /** @param {String} id @param {Status} status */
+  /** @param {String} id @param {import('../lib/status').Status} status */
   WriteTestFoot(id, status) {
     console.log(`### ${id} Summary (passed/total): ${(status.totalAssertions - status.failedAssertions)}/${status.totalAssertions}`)
-    console.log(`</details>`)
+    console.log(`</details>\n`)
   }
 
   /** @param {Number} testingTime @param {Number} failedTests @param {number} totalTests */
   WriteTestSummary(testingTime, failedTests, totalTests) {
-    console.log('')
-    console.log(`Testing took ${testingTime.toFixed(1)} ms`)
-    console.log('')
+    console.log(`\nTesting took ${testingTime.toFixed(1)} ms\n`)
     console.log(`Testing summary (passed/total): ${(totalTests - failedTests)}/${totalTests} ${failedTests === 0 ? "✓" : "✗"}`)
   }
 }
