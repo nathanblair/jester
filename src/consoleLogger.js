@@ -29,17 +29,17 @@ export class ConsoleLogger extends TestLogger {
   static BgCyan = "\x1b[46m"
   static BgWhite = "\x1b[47m"
 
+  /** @param {String} testId the identifier of the test module */
+  WriteTestHead(testId) {
+    console.warn(`\n${testId}`)
+  }
+
   /**
     * @param {Boolean} result the number of failed assertions
     * @param {String} shouldMsg statement of what it means if the tests `passes` or `fails`
     */
   WriteTestResult(result, shouldMsg) {
     console.warn(` - ${shouldMsg} : ${result ? `${ConsoleLogger.FgGreen}PASS` : `${ConsoleLogger.FgRed}FAIL`}${ConsoleLogger.Reset}`)
-  }
-
-  /** @param {String} testId the identifier of the test module */
-  WriteTestHead(testId) {
-    console.warn(`\n${testId}`)
   }
 
   /** @param {String} testClassFriendlyName @param {Status} status */
