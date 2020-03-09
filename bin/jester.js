@@ -10,6 +10,7 @@ import { Status } from '../lib/status.js'
 import { Configure } from '../lib/configure.js'
 
 /** @typedef {{Run: Function, id: String}} TestModule */
+/** @typedef {import('../lib/logger/testLogger.js').TestLogger} TestLogger */
 
 /**
  * @param {TestModule[]} testModules
@@ -20,12 +21,15 @@ async function RunTests(testModules, config) {
   //const session = new Session()
   //session.connect()
   //session.post('Profiler.enable')
-  //session.post('Profiler.startPreciseCoverage', {callCount: true, detailed: true})
+  //session.post('Profiler.startPreciseCoverage', {
+  //callCount: true,
+  //detailed: true,
+  //})
 
   const runTestsPromise = []
   const initialTime = performance.now()
   for (const eachTestModule of testModules) {
-    config.logger.WriteTestHead(eachTestModule.id)
+    config.logger.WriteModuleHead(eachTestModule.id)
     const status = new Status()
     runTestsPromise.push(
       new Promise(async resolve => {
@@ -33,15 +37,25 @@ async function RunTests(testModules, config) {
         resolve(status.failedAssertions !== 0 ? 1 : 0)
       })
     )
-    config.logger.WriteModuleSummary(eachTestModule.id, status)
+    config.logger.WriteModuleSummary(
+      eachTestModule.id,
+      status.totalAssertions,
+      status.failedAssertions
+    )
   }
   const testResults = await Promise.all(runTestsPromise)
   const endingTime = performance.now()
 
   //session.post('Profiler.takePreciseCoverage', (err, data) => {
   //session.post('Profiler.getBestEffortCoverage', (err, data) => {
-  //if (err) {config.logger.Error(err); return}
-  //writeFileSync(`${_coverageDir}${pathSep}coverage-${Date.now()}.json`, JSON.stringify(data))
+  //if (err) {
+  //config.logger.Error(err.message)
+  //return
+  //}
+  //writeFileSync(
+  //`${config.coverageDir}${pathSep}coverage-${Date.now()}.json`,
+  //JSON.stringify(data)
+  //)
   //})
 
   const failedTests = testResults.reduce((a, b) => a + b, 0)
@@ -57,12 +71,12 @@ async function RunTests(testModules, config) {
 
 /**
  * @param {String} dir
- * @param {Logger} logger
+ * @param {TestLogger} logger
  *
  * @returns {Promise<String[]>}
  */
 function GetEntries(dir, logger) {
-  //logger.Warn(`Looking in: ${dir}`)
+  logger.Debug(`Looking in: ${dir}`)
   try {
     return new Promise((resolve, reject) => {
       readdir(dir, (err, entries) => (err ? reject(err) : resolve(entries)))
@@ -75,7 +89,7 @@ function GetEntries(dir, logger) {
 
 /**
  * @param {String} path
- * @param {Logger} logger
+ * @param {TestLogger} logger
  *
  * @returns {Promise<import('fs').Stats?>}
  */
@@ -92,7 +106,7 @@ function GetEntryStats(path, logger) {
 
 /**
  * @param {String} dir
- * @param {Logger} logger
+ * @param {TestLogger} logger
  * @param {TestModule[]} testModules
  */
 async function FindTestModules(dir, logger, testModules) {
@@ -105,7 +119,7 @@ async function FindTestModules(dir, logger, testModules) {
         resolve(FindTestModules(fullPath, logger, testModules))
       )
     } else if (entryStats?.isFile()) {
-      //logger.Warn(`Found file: ${fullPath}`)
+      logger.Debug(`Found file: ${fullPath}`)
       /** @type {TestModule} */
       let module
       try {
@@ -139,7 +153,6 @@ async function jester() {
     err = -1
   }
   if (err !== null) return err
-  config.logger.Warn()
 
   let failedTests = 0
   try {

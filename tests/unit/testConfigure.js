@@ -6,7 +6,7 @@ export const id = 'Configure Test'
 
 /**
  * @param {import('../../lib/status').Status} status
- * @param {import('../../lib/logger').TestLogger} logger
+ * @param {import('../../lib/logger/logger.js').Logger} logger
  */
 export async function Run(status, logger) {
   /** @type {import('../../bin/jester').Config} */

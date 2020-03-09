@@ -5,7 +5,7 @@ export const id = 'Assert Test'
 
 /**
  * @param {import('../../lib/status').Status} status
- * @param {import('../../lib/logger').TestLogger} logger
+ * @param {import('../../lib/logger/logger.js').Logger} logger
  */
 export async function Run(status, logger) {
   Assert(
