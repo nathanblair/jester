@@ -15,7 +15,7 @@ import pkg from '../package.json'
 import { Status } from '../lib/status.js'
 
 /** @typedef {'text' | 'md'} Format */
-/** @typedef {{ testDir: String, format: Format, dryRun: Boolean, coverageDir: String }} Config */
+/** @typedef {{ testDir: String, logger: TestLogger?, dryRun: Boolean, coverageDir: String }} Config */
 /** @typedef {{Run: Function, id: String}} TestModule */
 
 export function showHelp() {
@@ -51,7 +51,6 @@ export function showHelp() {
  * @param {Config} config
  */
 export function Configure(config) {
-  const availableFormats = ['text', 'md']
   const availableOptions = ['-d', '-f', '-o', '-n', '-h', '-v']
 
   for (let index = 2; index < process.argv.length; index++) {
@@ -72,15 +71,25 @@ export function Configure(config) {
         showHelp()
         return 0
 
-      case '-d':
-        // @ts-ignore
-        config.testDir = nextElement || ''
+      case '-f':
+        switch (nextElement) {
+          case 'text':
+            config.logger = new ConsoleLogger(0b1111, 0b1111)
+            break
+          case 'md':
+            config.logger = new MarkdownLogger(0b1111, 0b1111)
+            break
+          default:
+            console.error(`Invalid format: ${nextElement}`)
+            showHelp()
+            return 1
+        }
         index++
         break
 
-      case '-f':
+      case '-d':
         // @ts-ignore
-        config.format = nextElement || ''
+        config.testDir = nextElement || ''
         index++
         break
 
@@ -98,27 +107,24 @@ export function Configure(config) {
     }
   }
 
-  console.warn(`Printing to ${config.format} format`)
-  if (availableFormats.indexOf(config.format) === -1) {
-    console.error(`Invalid format: ${config.format}`)
-    showHelp()
-    return 1
-  }
+  config.logger?.Debug(`Logging using: ${config.logger.constructor.name}`)
 
   config.coverageDir = join(process.cwd(), config.coverageDir)
   if (!existsSync(config.coverageDir)) {
-    console.error(`Unable to find coverage directory: ${config.coverageDir}`)
+    config.logger?.Error(
+      `Unable to find coverage directory: ${config.coverageDir}`
+    )
     return 1
   }
-  console.warn(`Writing coverage data to: ${config.coverageDir}`)
+  config.logger?.Debug(`Writing coverage data to: ${config.coverageDir}`)
 
   config.testDir = join(process.cwd(), config.testDir)
   if (!existsSync(config.testDir)) {
-    console.error(`Unable to find test directory: ${config.testDir}`)
+    config.logger?.Error(`Unable to find test directory: ${config.testDir}`)
     return 1
   }
-  console.warn(`Importing tests from: ${config.testDir}`)
-  console.warn('')
+  config.logger?.Debug(`Importing tests from: ${config.testDir}`)
+  config.logger?.Info('')
 
   return null
 }
@@ -129,17 +135,6 @@ export function Configure(config) {
  * @returns {Promise<Number>} totalFailedTests
  */
 async function RunTests(testModules, config) {
-  /** @type {TestLogger} */
-  let testLogger
-  switch (config.format) {
-    case 'text':
-      testLogger = new ConsoleLogger()
-      break
-    case 'md':
-      testLogger = new MarkdownLogger()
-      break
-  }
-
   //const session = new Session()
   //session.connect()
   //session.post('Profiler.enable')
@@ -148,96 +143,99 @@ async function RunTests(testModules, config) {
   const runTestsPromise = []
   const initialTime = performance.now()
   for (const eachTestModule of testModules) {
-    testLogger.WriteTestHead(eachTestModule.id)
+    config.logger?.WriteTestHead(eachTestModule.id)
     const status = new Status()
     runTestsPromise.push(
       new Promise(async resolve => {
-        config.dryRun || (await eachTestModule.Run(status, testLogger))
+        config.dryRun || (await eachTestModule.Run(status, config.logger))
         resolve(status.failedAssertions !== 0 ? 1 : 0)
       })
     )
-    testLogger.WriteTestFoot(eachTestModule.id, status)
+    config.logger?.WriteModuleSummary(eachTestModule.id, status)
   }
   const testResults = await Promise.all(runTestsPromise)
   const endingTime = performance.now()
 
   //session.post('Profiler.takePreciseCoverage', (err, data) => {
   //session.post('Profiler.getBestEffortCoverage', (err, data) => {
-  //if (err) {console.error(err); return}
+  //if (err) {config.logger.Error(err); return}
   //writeFileSync(`${_coverageDir}${pathSep}coverage-${Date.now()}.json`, JSON.stringify(data))
   //})
 
-  const totalFailedTests = testResults.reduce((a, b) => a + b, 0)
-  const totalTestsRun = testResults.length
-  testLogger.WriteTestSummary(
+  const failedTests = testResults.reduce((a, b) => a + b, 0)
+  const testsRun = testResults.length
+  config.logger?.WriteTestingSummary(
     endingTime - initialTime,
-    totalFailedTests,
-    totalTestsRun
+    failedTests,
+    testsRun
   )
 
-  return totalFailedTests
+  return failedTests
 }
 
 /**
  * @param {String} dir
+ * @param {TestLogger?} logger
  *
  * @returns {Promise<String[]>}
  */
-function GetEntries(dir) {
-  //console.warn(`Looking in: ${dir}`)
+function GetEntries(dir, logger) {
+  //logger.Warn(`Looking in: ${dir}`)
   try {
     return new Promise((resolve, reject) => {
       readdir(dir, (err, entries) => (err ? reject(err) : resolve(entries)))
     })
   } catch (error) {
-    console.error(error)
+    logger?.Error(error)
     return Promise.resolve([])
   }
 }
 
 /**
  * @param {String} path
+ * @param {TestLogger?} logger
  *
  * @returns {Promise<import('fs').Stats?>}
  */
-function GetEntryStats(path) {
+function GetEntryStats(path, logger) {
   try {
     return new Promise((resolve, reject) => {
       stat(path, (err, stats) => (err ? reject(err) : resolve(stats)))
     })
   } catch (error) {
-    console.error(error)
+    logger?.Error(error)
     return Promise.resolve(null)
   }
 }
 
 /**
  * @param {String} dir
+ * @param {TestLogger?} logger
  * @param {TestModule[]} testModules
  */
-async function FindTestModules(dir, testModules) {
+async function FindTestModules(dir, logger, testModules) {
   let functionFinished
-  for (const eachEntry of await GetEntries(dir)) {
+  for (const eachEntry of await GetEntries(dir, logger)) {
     const fullPath = join(dir, eachEntry)
-    const entryStats = await GetEntryStats(fullPath)
+    const entryStats = await GetEntryStats(fullPath, logger)
     if (entryStats?.isDirectory()) {
       functionFinished = new Promise(resolve =>
-        resolve(FindTestModules(fullPath, testModules))
+        resolve(FindTestModules(fullPath, logger, testModules))
       )
     } else if (entryStats?.isFile()) {
-      //console.warn(`Found file: ${fullPath}`)
+      //logger.Warn(`Found file: ${fullPath}`)
       /** @type {TestModule} */
       let module
       try {
         module = await import(fullPath.replace(/\\/g, '/').replace(/c:/gi, ''))
       } catch (error) {
-        console.error(error)
+        logger?.Error(error)
         continue
       }
 
       if (module['Run']) {
         if (!module['id']) module = { ...module, id: eachEntry }
-        console.warn(`Found module: ${module['id']}`)
+        logger?.Debug(`Found module: ${module['id']}`)
         testModules.push(module)
       }
     }
@@ -249,7 +247,7 @@ async function jester() {
   /** @type {Config} */
   const config = {
     testDir: 'tests',
-    format: 'text',
+    logger: null,
     dryRun: false,
     coverageDir: 'coverage'
   }
@@ -259,19 +257,19 @@ async function jester() {
   /** @type {TestModule[]} */
   let testModules = []
   try {
-    await FindTestModules(config.testDir, testModules)
+    await FindTestModules(config.testDir, config.logger, testModules)
   } catch (error) {
-    console.error(error)
+    config.logger?.Error(error)
     err = -1
   }
   if (err !== null) return err
-  console.warn()
+  config.logger?.Warn()
 
   let failedTests = 0
   try {
     failedTests = await RunTests(testModules, config)
   } catch (error) {
-    console.log(error)
+    config.logger?.Error(error)
     err = -1
   }
 

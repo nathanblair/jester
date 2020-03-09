@@ -2,6 +2,15 @@ import {TestLogger} from '../lib/logger.js'
 
 /** A markdown implementation of the TestLogger */
 export class MarkdownLogger extends TestLogger {
+  /**
+   * @param {String} message the string message to log
+   * @param {TestLogger.Level} _level
+   * @param {TestLogger.Channel} _channel
+   */
+  Log(message = '', _level, _channel) {
+    console.log(message)
+  }
+
   /** @param {String} id the identifier of the test module */
   WriteTestHead(id) {
       console.log(
