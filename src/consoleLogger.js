@@ -1,7 +1,10 @@
-import { TestLogger } from '../lib/logger.js'
+import { Logger } from '../lib/logger.js'
 
 /** A console implementation of the TestLogger */
-export class ConsoleLogger extends TestLogger {
+export class ConsoleLogger extends Logger {
+  /** @typedef {Logger.Levels} Levels */
+  /** @typedef {Logger.Channels} Channels */
+
   static Reset = '\x1b[0m'
   static Bright = '\x1b[1m'
   static Dim = '\x1b[2m'
@@ -28,53 +31,49 @@ export class ConsoleLogger extends TestLogger {
   static BgCyan = '\x1b[46m'
   static BgWhite = '\x1b[47m'
 
-  /**
-   * @param {TestLogger.Level} [enabledLevel]
-   * @param {TestLogger.Channel} [enabledChannel]
-   */
-  constructor(enabledLevel, enabledChannel) {
-    super(enabledLevel, enabledChannel)
-    /** @type {{message: String, time: String, level: TestLogger.Level, channel: TestLogger.Channel}[]} */
-    this.buffer = []
-  }
+  /** @type {{message: String, time: String, level: Levels, channel: Channels}[]} */
+  buffer = []
 
   /**
    * @param {String} message the string message to log
-   * @param {TestLogger.Level} level
-   * @param {TestLogger.Channel} channel
+   * @param {Logger.Level} level
+   * @param {Logger.Channel} channel
    */
   Log(message = '', level, channel) {
-    if (!(channel & this.enabledChannel) || !(level & this.enabledLevel)) return
+    if (!(level & this.enabledLevel) || !(channel & this.enabledChannel)) return
 
-    this.buffer.push({
-      message: `${message}\n`,
-      time: new Date().toLocaleTimeString(),
-      level: level,
-      channel: channel
-    })
-    process.stdout.write('\x1b[3J')
+    const prefix = 
+      channel & Logger.Channels.DEBUG
+        ? `${new Date().toLocaleTimeString()} [${Logger.Channels[channel]}] - `
+        : ''
+    
+    console.log(`${prefix}${message}`)
 
-    for (const eachMessage of this.buffer) {
-      (channel & TestLogger.errorChannel
-        ? process.stderr
-        : process.stdout
-      ).write(
-        `${
-          channel & TestLogger.debugChannel
-            ? `${eachMessage.time} [${eachMessage.channel}] - `
-            : ''
-        }${eachMessage.message}`
-      )
-    }
+    //this.buffer.push({
+    //message: `${message}\n`,
+    //time: new Date().toLocaleTimeString(),
+    //level: level,
+    //channel: channel,
+    //})
+    //process.stdout.write('\x1b[3J') // Erase display
+
+    //for (const eachMessage of this.buffer) {
+    //;(channel & Logger.Channels.ERROR
+    //? process.stderr
+    //: process.stdout
+    //).write(
+    //`${
+    //channel & Logger.Channels.DEBUG
+    //? `${eachMessage.time} [${Logger.Channels[eachMessage.channel]}] - `
+    //: ''
+    //}${eachMessage.message}`
+    //)
+    //}
   }
 
-  /** @param {String} testId the identifier of the test module */
-  WriteTestHead(testId) {
-    this.Log(
-      `${testId}`,
-      TestLogger.overallSummaryLevel,
-      TestLogger.infoChannel
-    )
+  /** @param {String} id the identifier of the test module */
+  WriteTestHead(id) {
+    this.Log(`${id}`, Logger.Levels.OVERALL, Logger.Channels.INFO)
   }
 
   /**
@@ -86,41 +85,45 @@ export class ConsoleLogger extends TestLogger {
       ` [${
         result ? `${ConsoleLogger.FgGreen}PASS` : `${ConsoleLogger.FgRed}FAIL`
       }${ConsoleLogger.Reset}] ${shouldMsg}`,
-      TestLogger.assertionResultLevel,
-      TestLogger.infoChannel
+      Logger.Levels.ASSERTION,
+      Logger.Channels.INFO
     )
   }
 
-  /** @param {String} testClassFriendlyName @param {import('../lib/status').Status} status */
-  WriteModuleSummary(testClassFriendlyName, status) {
+  /**
+   * @param {String} id
+   * @param {import('../lib/status').Status} status
+   */
+  WriteModuleSummary(id, status) {
     const color =
       status.failedAssertions === 0
         ? ConsoleLogger.FgGreen
         : ConsoleLogger.FgRed
     this.Log(
-      `  ↳ ${testClassFriendlyName} Summary (passed/total): ${color}${status.totalAssertions -
+      `  ↳ ${id} Summary (passed/total): ${color}${status.totalAssertions -
         status.failedAssertions}/${status.totalAssertions}${
         ConsoleLogger.Reset
       }\n`,
-      TestLogger.moduleSummaryLevel,
-      TestLogger.infoChannel
+      Logger.Levels.MODULE,
+      Logger.Channels.INFO
     )
   }
 
-  /** @param {Number} testingTime @param {Number} failedTests @param {number} totalTests */
+  /**
+   * @param {Number} testingTime
+   * @param {Number} failedTests
+   * @param {number} totalTests
+   */
   WriteTestingSummary(testingTime, failedTests, totalTests) {
-    this.Log(
-      `Testing took ${testingTime.toFixed(1)} ms`,
-      TestLogger.overallSummaryLevel,
-      TestLogger.infoChannel
-    )
     const color =
       failedTests === 0 ? ConsoleLogger.FgGreen : ConsoleLogger.FgRed
     this.Log(
-      `\nTesting summary (passed/total): ${color}${totalTests -
+      `Testing took ${testingTime.toFixed(
+        1
+      )} ms\n\nTesting summary (passed/total): ${color}${totalTests -
         failedTests}/${totalTests}${ConsoleLogger.Reset}`,
-      TestLogger.overallSummaryLevel,
-      TestLogger.infoChannel
+      Logger.Levels.OVERALL,
+      Logger.Channels.INFO
     )
   }
 }
