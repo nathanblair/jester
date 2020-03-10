@@ -190,7 +190,7 @@ function GetEntryStats(path, logger) {
  * @param {TestModule[]} testModules
  */
 async function FindTestModules(dir, logger, excludeDirs, testModules) {
-  let functionFinished
+  let functionFinished = []
   for (const eachEntry of await GetEntries(dir, logger)) {
     const fullPath = join(dir, eachEntry)
     const entryStats = await GetEntryStats(fullPath, logger)
@@ -199,9 +199,9 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
         logger.Debug(`${fullPath} is excluded. Skipping...`)
         continue
       }
-      functionFinished = new Promise(resolve =>
+      functionFinished.push(new Promise(resolve =>
         resolve(FindTestModules(fullPath, logger, excludeDirs, testModules))
-      )
+      ))
     } else if (entryStats?.isFile()) {
       logger.Debug(`Found file: ${fullPath}`)
       /** @type {TestModule} */
@@ -220,12 +220,15 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
       }
     }
   }
-  await functionFinished
+  await Promise.all(functionFinished)
 }
 
 async function jester() {
   const config = new Configure()
-  if (config.exitAfter) return config.exitCode
+  if (config.exitAfter) {
+    process.exitCode = config.exitCode
+    return
+  }
 
   /** @type {TestModule[]} */
   let testModules = []
