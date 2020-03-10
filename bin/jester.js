@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-//import { sep as pathSep } from 'path'
-//import { writeFileSync, } from 'fs'
-//import { Session } from 'inspector'
-import { readdir, stat } from 'fs'
+import { Session } from 'inspector'
+import { sep as pathSep } from 'path'
+import { writeFile, readdir, stat, unlink } from 'fs'
 import { join } from 'path'
 import { performance } from 'perf_hooks'
 import { Status } from '../lib/status.js'
@@ -13,18 +12,102 @@ import { Configure } from '../lib/configure.js'
 /** @typedef {import('../lib/logger/testLogger.js').TestLogger} TestLogger */
 
 /**
+ * @param {Session} session
+ */
+async function StartCoverage(session) {
+  session.connect()
+  await new Promise((resolve, reject) =>
+    session?.post('Profiler.enable', {}, err =>
+      err ? reject(err) : resolve(null)
+    )
+  )
+  await new Promise((resolve, reject) =>
+    session?.post(
+      'Profiler.startPreciseCoverage',
+      {
+        callCount: true,
+        detailed: true,
+      },
+      err => (err ? reject(err) : resolve(null))
+    )
+  )
+}
+
+/**
+ * @param {Session} session
+ * @param {TestLogger} logger
+ * @param {String} coverageDir
+ * @param {Boolean} clearCoverage
+ */
+async function WriteCoverageResults(
+  session,
+  logger,
+  coverageDir,
+  clearCoverage
+) {
+  /** @type {import('inspector').Profiler.TakePreciseCoverageReturnType?} */
+  let data = null
+  try {
+    data = await new Promise((resolve, reject) => {
+      session?.post('Profiler.takePreciseCoverage', (err, data) =>
+        err ? reject(err) : resolve(data)
+      )
+    })
+  } catch (err) {
+    logger.Error(err)
+  }
+
+  if (data === null) return
+
+  if (clearCoverage) {
+    /** @type {string[]} */
+    let entries = []
+    try {
+      entries = await new Promise((resolve, reject) => {
+        readdir(coverageDir, (err, entries) =>
+          err ? reject(err) : resolve(entries)
+        )
+      })
+    } catch (err) {
+      logger.Error(err)
+    }
+
+    for (const eachEntry of entries) {
+      if (eachEntry === '.gitignore') continue
+      const coverageFile = join(coverageDir, eachEntry)
+      logger.Debug(`Removing ${coverageFile}`)
+      try {
+        await new Promise((resolve, reject) => {
+          unlink(coverageFile, err => (err ? reject(err) : resolve(null)))
+        })
+      } catch (err) {
+        logger.Error(err)
+        return
+      }
+    }
+  }
+
+  const coverageFile = `${coverageDir}${pathSep}coverage-${Date.now()}.json`
+  logger.Debug(`Writing ${coverageFile}`)
+  try {
+    await new Promise((resolve, reject) => {
+      writeFile(coverageFile, JSON.stringify(data), err =>
+        err ? reject(err) : resolve(null)
+      )
+    })
+  } catch (err) {
+    logger.Error(err)
+  }
+}
+
+/**
  * @param {TestModule[]} testModules
  * @param {Configure} config
  * @returns {Promise<Number>} totalFailedTests
  */
 async function RunTests(testModules, config) {
-  //const session = new Session()
-  //session.connect()
-  //session.post('Profiler.enable')
-  //session.post('Profiler.startPreciseCoverage', {
-  //callCount: true,
-  //detailed: true,
-  //})
+  const session = new Session()
+  config.coverageEnabled && (await StartCoverage(session))
 
   const runTestsPromise = []
   const initialTime = performance.now()
@@ -46,17 +129,13 @@ async function RunTests(testModules, config) {
   const testResults = await Promise.all(runTestsPromise)
   const endingTime = performance.now()
 
-  //session.post('Profiler.takePreciseCoverage', (err, data) => {
-  //session.post('Profiler.getBestEffortCoverage', (err, data) => {
-  //if (err) {
-  //config.logger.Error(err.message)
-  //return
-  //}
-  //writeFileSync(
-  //`${config.coverageDir}${pathSep}coverage-${Date.now()}.json`,
-  //JSON.stringify(data)
-  //)
-  //})
+  config.coverageEnabled &&
+    (await WriteCoverageResults(
+      session,
+      config.logger,
+      config.coverageDir,
+      config.clearCoverage
+    ))
 
   const failedTests = testResults.reduce((a, b) => a + b, 0)
   const testsRun = testResults.length
