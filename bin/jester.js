@@ -225,7 +225,10 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
 
 async function jester() {
   const config = new Configure()
-  if (config.exitAfter) return config.exitCode
+  if (config.exitAfter) {
+    process.exitCode = config.exitCode
+    return
+  }
 
   /** @type {TestModule[]} */
   let testModules = []
