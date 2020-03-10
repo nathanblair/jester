@@ -5,7 +5,7 @@ export const id = 'Assert Test'
 
 /**
  * @param {import('../../lib/status').Status} status
- * @param {import('../../lib/logger/logger.js').Logger} logger
+ * @param {import('../../lib/logger/testLogger.js').TestLogger} logger
  */
 export async function Run(status, logger) {
   Assert(
@@ -61,6 +61,14 @@ export async function Run(status, logger) {
     'Should be able to fail incorrect assertions',
     status,
     logger
+  )
+
+  Assert(
+    () => assert.strictEqual(dummy, 2),
+    'Should be able to skip an assertion',
+    status,
+    logger,
+    true
   )
 
   const dummy = 2

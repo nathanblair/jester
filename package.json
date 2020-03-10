@@ -17,7 +17,7 @@
   "license": "MIT License",
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
-    "test": "node --no-warnings --experimental-json-modules --harmony bin/jester.js",
+    "test": "node --no-warnings --experimental-json-modules --harmony bin/jester.js -x tests/exclude",
     "coverage": "npx c8 --temp-directory=coverage report",
     "document": "npx typedoc --ignoreCompilerErrors --out docs --theme 'minimal' --excludeExternals --excludeNotExported --disableOutputCheck --inputFiles 'lib/assert.js'"
   },
