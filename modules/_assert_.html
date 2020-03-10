@@ -2389,13 +2389,13 @@ img {
 				<a name="assert" class="tsd-anchor"></a>
 				<h3>Assert</h3>
 				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-external-module">
-					<li class="tsd-signature tsd-kind-icon">Assert<span class="tsd-signature-symbol">(</span>assertFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{}</span>, shouldMsg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, status<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Status</span>, testLogger<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">TestLogger</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					<li class="tsd-signature tsd-kind-icon">Assert<span class="tsd-signature-symbol">(</span>assertFunction<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{}</span>, shouldMsg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, status<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Status</span>, testLogger<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">TestLogger</span>, skip<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/SonicOriginalSoftware/jester/blob/e8745d9/lib/assert.js#L22">assert.js:22</a></li>
+								<li>Defined in <a href="https://github.com/SonicOriginalSoftware/jester/blob/8e007ea/lib/assert.js#L23">assert.js:23</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2438,6 +2438,12 @@ Assert(
 							</li>
 							<li>
 								<h5><span class="tsd-flag ts-flagDefault value">Default value</span> testLogger: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">TestLogger</span><span class="tsd-signature-symbol"> = undefined</span></h5>
+							</li>
+							<li>
+								<h5><span class="tsd-flag ts-flagDefault value">Default value</span> skip: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>whether to skip this assertion (doesn&#39;t run or count against total or failed assertions)</p>
+								</div>
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
