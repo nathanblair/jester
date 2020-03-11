@@ -199,9 +199,11 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
         logger.Debug(`${fullPath} is excluded. Skipping...`)
         continue
       }
-      functionFinished.push(new Promise(resolve =>
-        resolve(FindTestModules(fullPath, logger, excludeDirs, testModules))
-      ))
+      functionFinished.push(
+        new Promise(resolve =>
+          resolve(FindTestModules(fullPath, logger, excludeDirs, testModules))
+        )
+      )
     } else if (entryStats?.isFile()) {
       logger.Debug(`Found file: ${fullPath}`)
       /** @type {TestModule} */
@@ -225,18 +227,14 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
 
 async function jester() {
   const config = new Configure()
-  if (config.exitAfter) {
-    process.exitCode = config.exitCode
-    return
-  }
+  config.exitAfter && process.exit(config.exitCode)
 
   /** @type {TestModule[]} */
   let testModules = []
   try {
     for (let eachDirectory of config.testDirs) {
-      eachDirectory = join(process.cwd(), eachDirectory)
       await FindTestModules(
-        eachDirectory,
+        join(process.cwd(), eachDirectory),
         config.logger,
         config.excludeDirs,
         testModules
@@ -244,21 +242,15 @@ async function jester() {
     }
   } catch (error) {
     config.logger.Error(error)
-    process.exitCode = -1
-    return
+    process.exit(-1)
   }
 
-  let failedTests = 0
   try {
-    failedTests = await RunTests(testModules, config)
+    process.exitCode = await RunTests(testModules, config)
   } catch (error) {
     config.logger.Error(error)
-    process.exitCode = -1
-    return
+    process.exit(-1)
   }
-
-  process.exitCode = failedTests
-  return
 }
 
 jester()
