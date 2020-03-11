@@ -140,13 +140,12 @@ jobs:
           git tag -d $DOC_TAG || return 0
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git -d $DOC_TAG || return 0
 
-      - name: Commit the updated docs
+      - name: Commit, tag, and push the updated docs
         run: |
+          $(git status --porcelain --untracked-files=no) && exit 0
           git add --all
           git commit -m "Auto-generated docs"
 
-      - name: Tag and push
-        run: |
           git tag $DOC_TAG
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $DOC_TAG
