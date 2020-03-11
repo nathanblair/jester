@@ -6,7 +6,7 @@ on:
     types: [synchronize, opened, reopened, edited, unlocked]
 
 jobs:
-  set-up:
+  install:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,22 +24,6 @@ jobs:
         run: |
           rm -rf types/*
           rm -rf docs/*
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: repo
-          path: .
-
-  install:
-    needs: [set-up]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: repo
-          path: .
 
       - name: Install
         run: |
@@ -106,7 +90,7 @@ jobs:
 
       - name: Update the types in the repo
         run: |
-          $(git status --porcelain --untracked-files=no) && exit 0
+          [[ -z $(git status --porcelain --untracked-files=no) ]] && exit 0
           git add --all
           git commit -m "Updated types"
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.head_ref }}
@@ -142,7 +126,7 @@ jobs:
 
       - name: Commit, tag, and push the updated docs
         run: |
-          $(git status --porcelain --untracked-files=no) && exit 0
+          [[ -z $(git status --porcelain --untracked-files=no) ]] && exit 0
           git add --all
           git commit -m "Auto-generated docs"
 
