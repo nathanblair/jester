@@ -53,7 +53,7 @@ jobs:
           path: .
 
   test:
-    needs: [set-up]
+    needs: [install]
 
     runs-on: ubuntu-latest
 
@@ -102,7 +102,7 @@ jobs:
           path: .
 
   document:
-    needs: [publish]
+    needs: [build]
 
     runs-on: ubuntu-latest
 
