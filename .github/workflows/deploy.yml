@@ -6,8 +6,8 @@ on:
     types: [closed]
 
 jobs:
-  set-up:
-    if: github.event.pull_request.merged == true
+  publish:
+    needs: [build]
 
     runs-on: ubuntu-latest
 
@@ -15,82 +15,6 @@ jobs:
       - name: Clone the production branch
         run: |
           git clone --branch=production --depth=1 ${{ github.repositoryUrl }} .
-          git config user.name ${{ github.actor }}
-          git config user.email ${{ github.actor }}@noreply.github.com
-
-      - name: Clone the docs
-        run: |
-          git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
-
-      - name: Initialize the build directories
-        run: |
-          rm -rf types/*
-          rm -rf docs/*
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: repo
-          path: .
-
-  test:
-    needs: [set-up]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: repo
-          path: .
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '13.x'
-
-      - name: Test
-        run: |
-          npm test
-
-  build:
-    needs: [test]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: repo
-          path: .
-
-      - name: Build types
-        run: |
-          npm run build:types
-
-      - name: Update the types in the repo
-        run: |
-          git add --all
-          git commit -m "Updated types"
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git production
-
-      - name: Build docs
-        run: |
-          npm run document
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: built-repo
-          path: .
-
-  publish:
-    needs: [build]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: built-repo
-          path: .
 
       - name: Set version on production branch and push
         run: |
@@ -106,31 +30,4 @@ jobs:
         run: |
           npm config set '//registry.npmjs.org/:_authToken' "${{ secrets.npm_token }}"
           npm publish
-
-  document:
-    needs: [publish]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: built-repo
-          path: .
-
-      - name: Update the live docs
-        run: |
-          cd docs
-          git config user.name ${{ github.actor }}
-          git config user.email ${{ github.actor }}@noreply.github.com
-
-          head_branch=${{ github.head_ref }}
-          VERSION=${head_branch#release\/}
-          git add --all
-          git commit -m "Docs for $VERSION"
-          DOC_TAG="$VERSION-docs"
-          git tag $DOC_TAG
-
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $DOC_TAG
 
