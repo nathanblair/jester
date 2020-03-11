@@ -84,12 +84,6 @@ jobs:
         run: |
           npm run build:types
 
-      - name: Update the types in the repo
-        run: |
-          git add --all
-          git commit -m "Updated types"
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git production
-
       - name: Build docs
         run: |
           npm run document
@@ -98,6 +92,23 @@ jobs:
         with:
           name: built-repo
           path: .
+
+  type:
+    needs: [build]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: built-repo
+          path: .
+
+      - name: Update the types in the repo
+        run: |
+          git add --all
+          git commit -m "Updated types"
+          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.head_ref }}
 
   document:
     needs: [build]
