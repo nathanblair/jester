@@ -106,6 +106,7 @@ jobs:
 
       - name: Update the types in the repo
         run: |
+          $(git status --porcelain --untracked-files=no) && exit 0
           git add --all
           git commit -m "Updated types"
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.head_ref }}
