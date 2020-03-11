@@ -22,9 +22,6 @@
     "build:types": "npx -p typescript tsc",
     "document": "npx typedoc --ignoreCompilerErrors --out docs --theme 'minimal' --excludeExternals --excludeNotExported --disableOutputCheck --inputFiles 'lib/assert.js'"
   },
-  "engines": {
-    "node": ">=13.2.0"
-  },
   "types": "types",
   "devDependencies": {
     "@types/node": ""
