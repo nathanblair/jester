@@ -120,8 +120,7 @@ jobs:
         run: |
           head_branch=${{ github.head_ref }}
           version=${head_branch#release\/}
-          doc_tag="$VERSION-docs"
-          echo "::set-env name=VERSION::$version"
+          doc_tag="${version}-docs"
           echo "::set-env name=DOC_TAG::$doc_tag"
 
       - name: Remove existing tags
@@ -132,7 +131,7 @@ jobs:
       - name: Commit the updated docs
         run: |
           git add --all
-          git commit -m "Docs for $VERSION"
+          git commit -m "Auto-generated docs"
 
       - name: Tag and push
         run: |
