@@ -19,12 +19,15 @@
   "scripts": {
     "test": "node --no-warnings --experimental-json-modules --harmony bin/jester.js -x tests/exclude",
     "coverage": "npx c8 --temp-directory=coverage report",
+    "build:types": "npx -p typescript tsc",
     "document": "npx typedoc --ignoreCompilerErrors --out docs --theme 'minimal' --excludeExternals --excludeNotExported --disableOutputCheck --inputFiles 'lib/assert.js'"
   },
   "engines": {
     "node": ">=13.2.0"
   },
+  "types": "types",
   "devDependencies": {
     "@types/node": ""
-  }
+  },
+  "dependencies": {}
 }

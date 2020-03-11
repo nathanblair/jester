@@ -9,12 +9,15 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "strictNullChecks": true,
     "noImplicitReturns": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "types",
+    "declaration": true,
     "outDir": "dist"
   },
-  "exclude": ["coverage", "node_modules"]
+  "files": ["index.js", "lib/assert.js", "lib/status.js", "lib/logger/testLogger.js", "lib/logger/logger.js"]
 }
