@@ -15,14 +15,13 @@ import { Configure } from '../lib/configure.js'
  * @param {Session} session
  */
 async function StartCoverage(session) {
-  session.connect()
   await new Promise((resolve, reject) =>
-    session?.post('Profiler.enable', {}, err =>
+    session.post('Profiler.enable', {}, err =>
       err ? reject(err) : resolve(null)
     )
   )
   await new Promise((resolve, reject) =>
-    session?.post(
+    session.post(
       'Profiler.startPreciseCoverage',
       {
         callCount: true,
@@ -31,6 +30,34 @@ async function StartCoverage(session) {
       err => (err ? reject(err) : resolve(null))
     )
   )
+}
+
+async function ClearCoverageDirectory(coverageDir) {
+  /** @type {string[]} */
+  let entries = []
+  try {
+    entries = await new Promise((resolve, reject) => {
+      readdir(coverageDir, (err, entries) =>
+        err ? reject(err) : resolve(entries)
+      )
+    })
+  } catch (err) {
+    logger.Error(err)
+  }
+
+  for (const eachEntry of entries) {
+    if (eachEntry === '.gitignore') continue
+    const coverageFile = join(coverageDir, eachEntry)
+    logger.Debug(`Removing ${coverageFile}`)
+    try {
+      await new Promise((resolve, reject) => {
+        unlink(coverageFile, err => (err ? reject(err) : resolve(null)))
+      })
+    } catch (err) {
+      logger.Error(err)
+      return
+    }
+  }
 }
 
 /**
@@ -56,36 +83,9 @@ async function WriteCoverageResults(
   } catch (err) {
     logger.Error(err)
   }
-
   if (data === null) return
 
-  if (clearCoverage) {
-    /** @type {string[]} */
-    let entries = []
-    try {
-      entries = await new Promise((resolve, reject) => {
-        readdir(coverageDir, (err, entries) =>
-          err ? reject(err) : resolve(entries)
-        )
-      })
-    } catch (err) {
-      logger.Error(err)
-    }
-
-    for (const eachEntry of entries) {
-      if (eachEntry === '.gitignore') continue
-      const coverageFile = join(coverageDir, eachEntry)
-      logger.Debug(`Removing ${coverageFile}`)
-      try {
-        await new Promise((resolve, reject) => {
-          unlink(coverageFile, err => (err ? reject(err) : resolve(null)))
-        })
-      } catch (err) {
-        logger.Error(err)
-        return
-      }
-    }
-  }
+  clearCoverage && ClearCoverageDirectory(coverageDir)
 
   const coverageFile = `${coverageDir}${pathSep}coverage-${Date.now()}.json`
   logger.Debug(`Writing ${coverageFile}`)
@@ -107,6 +107,7 @@ async function WriteCoverageResults(
  */
 async function RunTests(testModules, config) {
   const session = new Session()
+  session.connect()
   config.coverageEnabled && (await StartCoverage(session))
 
   const runTestsPromise = []
@@ -117,7 +118,7 @@ async function RunTests(testModules, config) {
     runTestsPromise.push(
       new Promise(async resolve => {
         config.dryRun || (await eachTestModule.Run(status, config.logger))
-        resolve(status.failedAssertions !== 0 ? 1 : 0)
+        resolve(status.failedAssertions === 0 ? 0 : 1)
       })
     )
     config.logger.WriteModuleSummary(
@@ -136,6 +137,7 @@ async function RunTests(testModules, config) {
       config.coverageDir,
       config.clearCoverage
     ))
+  session.disconnect()
 
   const failedTests = testResults.reduce((a, b) => a + b, 0)
   const testsRun = testResults.length

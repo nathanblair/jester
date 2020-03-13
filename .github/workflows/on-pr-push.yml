@@ -121,7 +121,7 @@ jobs:
 
       - name: Remove existing tags
         run: |
-          git tag -d $DOC_TAG || return 0
+          git tag -d $DOC_TAG || exit 0
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git -d $DOC_TAG || return 0
 
       - name: Commit, tag, and push the updated docs
