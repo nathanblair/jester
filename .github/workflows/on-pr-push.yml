@@ -121,16 +121,14 @@ jobs:
 
       - name: Remove existing tags
         run: |
-          git tag -d $DOC_TAG || :
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git -d $DOC_TAG || :
+          [[ -z $(git tag -l $DOC_TAG) ]] && : || git tag -d $DOC_TAG
+          [[ -z $(git ls-remote origin refs/tags/$DOC_TAG) ]] && : ||
+            git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git -d $DOC_TAG
 
       - name: Commit, tag, and push the updated docs
         run: |
-          git status
-          [[ -z $(git status --porcelain --untracked-files=no) ]] && exit 0
           git add --all
           git commit -m "Auto-generated docs"
-          git status
 
           git tag $DOC_TAG
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
