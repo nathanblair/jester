@@ -14,7 +14,7 @@
     "url": "git+https://github.com/SonicOriginalSoftware/jester.git"
   },
   "author": "Nathan Blair",
-  "license": "MIT License",
+  "license": "MIT",
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
     "test": "node --no-warnings --experimental-json-modules --harmony bin/jester.js -x tests/exclude",
@@ -24,7 +24,7 @@
   },
   "types": "types",
   "devDependencies": {
-    "@types/node": ""
+    "@types/node": "13.9.1"
   },
   "dependencies": {}
 }
