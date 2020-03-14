@@ -11,7 +11,7 @@ export class Logger {
     enabledChannels: number;
     /**
      * @param {String} message the string message to log
-     * @param {Number} channels bitmask of the channels to send the message to
+     * @param {Number} channels bitmask of the channels to send the message
      */
     Log(message: string | undefined, channels: number): void;
     /**

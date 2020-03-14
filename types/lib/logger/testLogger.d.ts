@@ -1,7 +1,7 @@
 /**
  * A test logger interface
  *
- * @abstract
+ * @interface
  */
 export class TestLogger extends Logger {
     static Channels: {

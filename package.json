@@ -14,7 +14,7 @@
     "url": "git+https://github.com/SonicOriginalSoftware/jester.git"
   },
   "author": "Nathan Blair",
-  "license": "MIT License",
+  "license": "MIT",
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
     "test": "node --no-warnings --experimental-json-modules --harmony bin/jester.js -x tests/exclude",
@@ -22,12 +22,9 @@
     "build:types": "npx -p typescript tsc",
     "document": "npx typedoc --ignoreCompilerErrors --out docs --theme 'minimal' --excludeExternals --excludeNotExported --disableOutputCheck --inputFiles 'lib/assert.js'"
   },
-  "engines": {
-    "node": ">=13.2.0"
-  },
   "types": "types",
   "devDependencies": {
-    "@types/node": ""
+    "@types/node": "13.9.1"
   },
   "dependencies": {}
 }
