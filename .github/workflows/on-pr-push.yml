@@ -90,6 +90,7 @@ jobs:
 
       - name: Update the types in the repo
         run: |
+          git status
           [[ -z $(git status --porcelain --untracked-files=no) ]] && exit 0
           git add --all
           git commit -m "Updated types"
