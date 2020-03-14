@@ -127,8 +127,12 @@ jobs:
 
       - name: Commit, tag, and push the updated docs
         run: |
+          printf "Before commit\n"
+          git status
           git add --all
           git commit -m "Auto-generated docs"
+          printf "After commit\n"
+          git status
 
           git tag $DOC_TAG
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
