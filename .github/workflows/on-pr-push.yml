@@ -109,7 +109,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: doc-build
+          name: docs-build
           path: .
 
       - name: Configure
