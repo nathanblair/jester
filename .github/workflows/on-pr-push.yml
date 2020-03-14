@@ -76,12 +76,11 @@ jobs:
       - name: Build docs
         run: |
           npm run document
-          cd docs
 
       - uses: actions/upload-artifact@v1
         with:
           name: docs-build
-          path: .
+          path: docs
 
   type:
     needs: [build]
