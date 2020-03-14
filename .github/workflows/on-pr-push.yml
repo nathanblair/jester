@@ -134,6 +134,7 @@ jobs:
         run: |
           git add --all
           git commit -m "Auto-generated docs"
+          git status
 
           git tag $DOC_TAG
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
