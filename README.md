@@ -49,5 +49,3 @@ export const assertions = {
 
 # Help/Configuration
 - Pass the `-h` flag to `jester` for help on configuring
-
-# [Documentation](https://sonicoriginalsoftware.github.io/jester/)
