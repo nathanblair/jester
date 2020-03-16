@@ -19,5 +19,5 @@
     "declaration": true,
     "outDir": "dist"
   },
-  "files": ["index.js", "lib/assert.js", "lib/status.js", "lib/logger/testLogger.js", "lib/logger/logger.js"]
+  "files": ["index.js", "lib/assert.js", "lib/logger/testLogger.js", "lib/logger/logger.js"]
 }

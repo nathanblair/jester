@@ -73,15 +73,6 @@ jobs:
           name: type-build
           path: .
 
-      - name: Build docs
-        run: |
-          npm run document
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: docs-build
-          path: docs
-
   type:
     needs: [build]
 
@@ -99,42 +90,3 @@ jobs:
           git add --all
           git commit -m "Updated types"
           git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.head_ref }}
-
-  document:
-    needs: [build]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: docs-build
-          path: .
-
-      - name: Configure
-        run: |
-          git config user.name ${{ github.actor }}
-          git config user.email ${{ github.actor }}@noreply.github.com
-
-      - name: Get version
-        run: |
-          head_branch=${{ github.head_ref }}
-          version=${head_branch#release\/}
-          doc_tag="${version}-docs"
-          echo "::set-env name=DOC_TAG::$doc_tag"
-
-      - name: Remove existing tags
-        run: |
-          [[ -z $(git tag -l $DOC_TAG) ]] && : || git tag -d $DOC_TAG
-          [[ -z $(git ls-remote origin refs/tags/$DOC_TAG) ]] && : ||
-            git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git -d $DOC_TAG
-
-      - name: Commit, tag, and push the updated docs
-        run: |
-          git add --all
-          git commit -m "Auto-generated docs"
-
-          git tag $DOC_TAG
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $DOC_TAG
-
