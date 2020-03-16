@@ -6,7 +6,9 @@ on:
     types: [synchronize, opened, reopened, edited, unlocked]
 
 jobs:
-  install:
+  test:
+    needs: [install]
+
     runs-on: ubuntu-latest
 
     steps:
@@ -16,35 +18,6 @@ jobs:
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
-      - name: Clone the docs
-        run: |
-          git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
-
-      - name: Initialize the build directories
-        run: |
-          rm -rf types/*
-          rm -rf docs/*
-
-      - name: Install
-        run: |
-          npm i
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: repo
-          path: .
-
-  test:
-    needs: [install]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: repo
-          path: .
-
       - uses: actions/setup-node@v1
         with:
           node-version: '13.x'
@@ -52,41 +25,3 @@ jobs:
       - name: Test
         run: |
           npm test
-
-  build:
-    needs: [test]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: repo
-          path: .
-
-      - name: Build types
-        run: |
-          npm run build:types
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: type-build
-          path: .
-
-  type:
-    needs: [build]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: type-build
-          path: .
-
-      - name: Update the types in the repo
-        run: |
-          [[ -z $(git status --porcelain --untracked-files=no) ]] && exit 0
-          git add --all
-          git commit -m "Updated types"
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.head_ref }}
