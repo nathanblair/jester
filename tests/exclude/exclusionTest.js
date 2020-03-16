@@ -1,17 +1,9 @@
-import {strict as assert} from 'assert'
-import {Assert} from '../../lib/assert.js'
+import { strict as assert } from 'assert'
 
 export const id = 'Exclusion Test'
 
-/**
- * @param {import('../../lib/status').Status} status
- * @param {import('../../lib/logger/testLogger.js').TestLogger} logger
- */
-export async function Run(status, logger) {
-  Assert(
-    () => assert.fail(),
-    "Should not be executing tests in an excluded directory",
-    status,
-    logger
-  )
+export const assertions = {
+  'Should not be executing tests in an excluded directory': {
+    function: () => assert.fail(),
+  }
 }

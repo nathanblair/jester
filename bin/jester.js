@@ -5,9 +5,12 @@ import { sep as pathSep } from 'path'
 import { writeFile, readdir, stat, unlink } from 'fs'
 import { join } from 'path'
 import { performance } from 'perf_hooks'
+import { Assert } from '../lib/assert.js'
 import { Configure } from '../lib/configure.js'
 
-/** @typedef {Object.<string, {function: Function, skipped: Boolean}>} TestModules */
+/** @typedef {{String: {function: Function, skipped: Boolean}}} TestAssertions */
+
+/** @typedef {{id: String, assertions: TestAssertions}} TestModules */
 /** @typedef {import('../lib/logger/testLogger.js').TestLogger} TestLogger */
 
 /**
@@ -100,37 +103,31 @@ async function WriteCoverageResults(
 }
 
 /**
- * @param {TestModules} testModules
+ * @param {TestModules[]} testModules
  * @param {Configure} config
- * @returns {Promise<Number>} totalFailedTests
+ * @returns {Promise<Number>}
  */
 async function RunTests(testModules, config) {
   const session = new Session()
   session.connect()
   config.coverageEnabled && (await StartCoverage(session))
 
-  /** @type {Promise<{testName: String, status: Status}>[]} */
-  const runTestsPromise = []
+  /** @type {{testModuleId: String, assertionId: String, result: Boolean, skipped: Boolean}[]} */
+  const assertions = []
   const initialTime = performance.now()
   for (const eachTestModule of testModules) {
-    for (const eachAssertion of eachTestModule) {
-
+    for (const eachAssertionId in eachTestModule.assertions) {
+      assertions.push(
+        new Promise(async resolve => {
+          const skipped = config.dryRun || eachTestModule.assertions[eachAssertionId].skip || false
+          const assertFunction = eachTestModule.assertions[eachAssertionId].function
+          const result = skipped ? true : await Assert(assertFunction, skipped)
+          resolve({testModuleId: eachTestModule.id, assertionId: eachAssertionId, result: result, skipped: skipped})
+        })
+      )
     }
-    const status = new Status()
-    runTestsPromise.push(
-      new Promise(async resolve => {
-        config.dryRun
-          ? status.assertions.push({
-              message: '',
-              result: false,
-              skipped: true,
-            })
-          : await eachTestModule.Run(status, config.logger)
-        resolve({ testName: eachTestModule.id, status: status })
-      })
-    )
   }
-  const testModuleResults = await Promise.all(runTestsPromise)
+  const assertionResults = await Promise.all(assertions)
   const endingTime = performance.now()
 
   config.coverageEnabled &&
@@ -142,34 +139,43 @@ async function RunTests(testModules, config) {
     ))
   session.disconnect()
 
-  let failedTests = 0
-  for (const eachModuleResult of testModuleResults) {
-    let failedAssertions = 0
-    config.logger.WriteModuleHead(eachModuleResult.testName)
-    for (const eachAssertion of eachModuleResult.status.assertions) {
-      if (!eachAssertion.result) failedAssertions++
-      config.logger.WriteAssertionResult(
-        eachAssertion.result,
-        eachAssertion.message,
-        eachAssertion.skipped
-      )
-    }
-    config.logger.WriteModuleSummary(
-      eachModuleResult.testName,
-      eachModuleResult.status.assertions.length,
-      failedAssertions
-    )
-    if (failedAssertions > 0) failedTests++
+  const moduleResults = {}
+  for (const eachAssertionResult of assertionResults) {
+    if (!moduleResults.hasOwnProperty(eachAssertionResult.testModuleId))
+      moduleResults[eachAssertionResult.testModuleId] = { assertionResults: []}
+
+    moduleResults[eachAssertionResult.testModuleId].assertionResults.push(eachAssertionResult)
   }
 
-  const testsRun = testModuleResults.length
+  let failedModules = 0
+  for (const [eachModuleId, eachModuleResult] of Object.entries(moduleResults)) {
+    config.logger.WriteModuleHead(eachModuleId)
+    let failedAssertions = 0
+
+    for (const eachAssertionResult of eachModuleResult.assertionResults) {
+      if (!eachAssertionResult.result) failedAssertions++
+      config.logger.WriteAssertionResult(
+        eachAssertionResult.result,
+        eachAssertionResult.assertionId,
+        eachAssertionResult.skipped
+      )
+    }
+
+    if (failedAssertions > 0) failedModules++
+    config.logger.WriteModuleSummary(
+      eachModuleId,
+      eachModuleResult.assertionResults.length,
+      failedAssertions
+    )
+  }
+
   config.logger.WriteTestingSummary(
     endingTime - initialTime,
-    failedTests,
-    testsRun
+    failedModules,
+    testModules.length
   )
 
-  return failedTests
+  return failedModules
 }
 
 /**

@@ -17,6 +17,7 @@
         "skipFiles": [
           "<node_internals>/**"
         ],
+        "outputCapture": "std",
         "program": "${workspaceFolder}\\bin\\jester.js"
       }
     ],
