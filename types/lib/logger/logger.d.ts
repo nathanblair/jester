@@ -10,10 +10,10 @@ export class Logger {
     };
     enabledChannels: number;
     /**
-     * @param {String} message the string message to log
-     * @param {Number} channels bitmask of the channels to send the message
+     * @param {String} _message the string message to log
+     * @param {Number} _channels bitmask of the channels to send the message
      */
-    Log(message: string | undefined, channels: number): void;
+    Log(_message: string | undefined, _channels: number): void;
     /**
      * @param {String} message
      */
