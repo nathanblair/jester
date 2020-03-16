@@ -5,10 +5,12 @@ import { sep as pathSep } from 'path'
 import { writeFile, readdir, stat, unlink } from 'fs'
 import { join } from 'path'
 import { performance } from 'perf_hooks'
-import { Status } from '../lib/status.js'
+import { Assert } from '../lib/assert.js'
 import { Configure } from '../lib/configure.js'
 
-/** @typedef {{Run: Function, id: String}} TestModule */
+/** @typedef {{String: {function: Function, skipped: Boolean}}} TestAssertions */
+
+/** @typedef {{id: String, assertions: TestAssertions}} TestModules */
 /** @typedef {import('../lib/logger/testLogger.js').TestLogger} TestLogger */
 
 /**
@@ -101,33 +103,31 @@ async function WriteCoverageResults(
 }
 
 /**
- * @param {TestModule[]} testModules
+ * @param {TestModules[]} testModules
  * @param {Configure} config
- * @returns {Promise<Number>} totalFailedTests
+ * @returns {Promise<Number>}
  */
 async function RunTests(testModules, config) {
   const session = new Session()
   session.connect()
   config.coverageEnabled && (await StartCoverage(session))
 
-  const runTestsPromise = []
+  /** @type {{testModuleId: String, assertionId: String, result: Boolean, skipped: Boolean}[]} */
+  const assertions = []
   const initialTime = performance.now()
   for (const eachTestModule of testModules) {
-    config.logger.WriteModuleHead(eachTestModule.id)
-    const status = new Status()
-    runTestsPromise.push(
-      new Promise(async resolve => {
-        config.dryRun || (await eachTestModule.Run(status, config.logger))
-        resolve(status.failedAssertions === 0 ? 0 : 1)
-      })
-    )
-    config.logger.WriteModuleSummary(
-      eachTestModule.id,
-      status.totalAssertions,
-      status.failedAssertions
-    )
+    for (const eachAssertionId in eachTestModule.assertions) {
+      assertions.push(
+        new Promise(async resolve => {
+          const skipped = config.dryRun || eachTestModule.assertions[eachAssertionId].skip || false
+          const assertFunction = eachTestModule.assertions[eachAssertionId].function
+          const result = skipped ? true : await Assert(assertFunction, skipped)
+          resolve({testModuleId: eachTestModule.id, assertionId: eachAssertionId, result: result, skipped: skipped})
+        })
+      )
+    }
   }
-  const testResults = await Promise.all(runTestsPromise)
+  const assertionResults = await Promise.all(assertions)
   const endingTime = performance.now()
 
   config.coverageEnabled &&
@@ -139,15 +139,43 @@ async function RunTests(testModules, config) {
     ))
   session.disconnect()
 
-  const failedTests = testResults.reduce((a, b) => a + b, 0)
-  const testsRun = testResults.length
+  const moduleResults = {}
+  for (const eachAssertionResult of assertionResults) {
+    if (!moduleResults.hasOwnProperty(eachAssertionResult.testModuleId))
+      moduleResults[eachAssertionResult.testModuleId] = { assertionResults: []}
+
+    moduleResults[eachAssertionResult.testModuleId].assertionResults.push(eachAssertionResult)
+  }
+
+  let failedModules = 0
+  for (const [eachModuleId, eachModuleResult] of Object.entries(moduleResults)) {
+    config.logger.WriteModuleHead(eachModuleId)
+    let failedAssertions = 0
+
+    for (const eachAssertionResult of eachModuleResult.assertionResults) {
+      if (!eachAssertionResult.result) failedAssertions++
+      config.logger.WriteAssertionResult(
+        eachAssertionResult.result,
+        eachAssertionResult.assertionId,
+        eachAssertionResult.skipped
+      )
+    }
+
+    if (failedAssertions > 0) failedModules++
+    config.logger.WriteModuleSummary(
+      eachModuleId,
+      eachModuleResult.assertionResults.length,
+      failedAssertions
+    )
+  }
+
   config.logger.WriteTestingSummary(
     endingTime - initialTime,
-    failedTests,
-    testsRun
+    failedModules,
+    testModules.length
   )
 
-  return failedTests
+  return failedModules
 }
 
 /**
@@ -213,11 +241,12 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
       try {
         module = await import(fullPath.replace(/\\/g, '/').replace(/c:/gi, ''))
       } catch (error) {
-        logger.Error(error)
+        logger.Error(`Error importing: ${fullPath}: ${error}`)
+        logger.Error('Skipping...')
         continue
       }
 
-      if (module['Run']) {
+      if (module['assertions']) {
         if (!module['id']) module = { ...module, id: eachEntry }
         logger.Debug(`Found module: ${module['id']}`)
         testModules.push(module)

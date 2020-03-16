@@ -6,7 +6,7 @@ on:
     types: [synchronize, opened, reopened, edited, unlocked]
 
 jobs:
-  install:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,35 +16,6 @@ jobs:
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@noreply.github.com
 
-      - name: Clone the docs
-        run: |
-          git clone --depth=1 --branch=master ${{ github.repositoryUrl }} docs
-
-      - name: Initialize the build directories
-        run: |
-          rm -rf types/*
-          rm -rf docs/*
-
-      - name: Install
-        run: |
-          npm i
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: repo
-          path: .
-
-  test:
-    needs: [install]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: repo
-          path: .
-
       - uses: actions/setup-node@v1
         with:
           node-version: '13.x'
@@ -52,89 +23,3 @@ jobs:
       - name: Test
         run: |
           npm test
-
-  build:
-    needs: [test]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: repo
-          path: .
-
-      - name: Build types
-        run: |
-          npm run build:types
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: type-build
-          path: .
-
-      - name: Build docs
-        run: |
-          npm run document
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: docs-build
-          path: docs
-
-  type:
-    needs: [build]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: type-build
-          path: .
-
-      - name: Update the types in the repo
-        run: |
-          [[ -z $(git status --porcelain --untracked-files=no) ]] && exit 0
-          git add --all
-          git commit -m "Updated types"
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.head_ref }}
-
-  document:
-    needs: [build]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: docs-build
-          path: .
-
-      - name: Configure
-        run: |
-          git config user.name ${{ github.actor }}
-          git config user.email ${{ github.actor }}@noreply.github.com
-
-      - name: Get version
-        run: |
-          head_branch=${{ github.head_ref }}
-          version=${head_branch#release\/}
-          doc_tag="${version}-docs"
-          echo "::set-env name=DOC_TAG::$doc_tag"
-
-      - name: Remove existing tags
-        run: |
-          [[ -z $(git tag -l $DOC_TAG) ]] && : || git tag -d $DOC_TAG
-          [[ -z $(git ls-remote origin refs/tags/$DOC_TAG) ]] && : ||
-            git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git -d $DOC_TAG
-
-      - name: Commit, tag, and push the updated docs
-        run: |
-          git add --all
-          git commit -m "Auto-generated docs"
-
-          git tag $DOC_TAG
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git master
-          git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git $DOC_TAG
-

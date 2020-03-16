@@ -1,20 +1,10 @@
-//import {strict as assert} from 'assert'
-//import {Assert} from '../../lib/assert.js'
-//import {Configure} from '../../bin/jester.js'
+import { strict as assert } from 'assert'
+import { Configure } from '../../lib/configure.js'
 
 export const id = 'Configure Test'
 
-/**
- * @param {import('../../lib/status').Status} status
- * @param {import('../../lib/logger/logger.js').Logger} logger
- */
-export async function Run(status, logger) {
-  /** @type {import('../../bin/jester').Config} */
-  //const config = { coverageDir: "coverage", format: "text", dryRun: false, testDir: "tests" }
-  // Assert(
-  //   () => assert.doesNotThrow(() => Configure(config) ),
-  //   'Should be able to configure',
-  //   status,
-  //   logger
-  // )
+export const assertions = {
+  'Should be create a Configure instance': {
+    function: () => assert.doesNotThrow(() => new Configure()),
+  }
 }
