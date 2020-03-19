@@ -24,9 +24,11 @@ export const assertions = {
     function: () => assert.deepStrictEqual(2, 2),
   },
   'Should be able to pass correct assertions asynchronously': {
-    function: async () => {
-      assert.deepStrictEqual(await Assert(() => assert.deepStrictEqual(2, 2), false), true)
-    },
+    function: async () =>
+      assert.deepStrictEqual(
+        await Assert(() => assert.deepStrictEqual(2, 2), false),
+        true
+      ),
   },
   'Should be able to fail incorrect assertions': {
     function: async () => {
@@ -35,7 +37,10 @@ export const assertions = {
   },
   'Should be able to fail incorrect assertions asynchronously': {
     function: async () => {
-      assert.deepStrictEqual(await Assert(() => assert.deepStrictEqual(2, 4), false), false)
+      assert.deepStrictEqual(
+        await Assert(() => assert.deepStrictEqual(2, 4), false),
+        false
+      )
     },
   },
   'Should be able to skip assertions': {
@@ -46,15 +51,26 @@ export const assertions = {
     function: () => assert.strictEqual(dummy, 2),
   },
   'Should be able to setUp': {
-    function: () => assert.deepStrictEqual(setUpVar, 6)
+    function: () => assert.deepStrictEqual(setUpVar, 6),
   },
   'Should be able to setUp asynchronously': {
-    function: async () => assert.deepStrictEqual(setUpAsyncVar, 'y')
+    function: async () =>
+      assert.deepStrictEqual(
+        await Assert(() => assert.deepStrictEqual(setUpAsyncVar, 'y'), false),
+        true
+      ),
   },
   'Should be able to tearDown': {
-    function: () => assert.deepStrictEqual(tearDownVar, 10)
+    function: () => assert.deepStrictEqual(tearDownVar, 10),
   },
   'Should be able to tearDown asynchronously': {
-    function: async () => assert.deepStrictEqual(tearDownAsyncVar, 'off')
+    function: async () =>
+      assert.deepStrictEqual(
+        await Assert(
+          () => assert.deepStrictEqual(tearDownAsyncVar, 'off'),
+          false
+        ),
+        true
+      ),
   },
 }
