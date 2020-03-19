@@ -9,7 +9,6 @@ import { Assert } from '../lib/assert.js'
 import { Configure } from '../lib/configure.js'
 
 /** @typedef {{String: {function: Function, skipped: Boolean}}} TestAssertions */
-
 /** @typedef {{id: String, assertions: TestAssertions}} TestModules */
 /** @typedef {import('../lib/logger/testLogger.js').TestLogger} TestLogger */
 
@@ -119,10 +118,24 @@ async function RunTests(testModules, config) {
     for (const eachAssertionId in eachTestModule.assertions) {
       assertions.push(
         new Promise(async resolve => {
-          const skipped = config.dryRun || eachTestModule.assertions[eachAssertionId].skip || false
-          const assertFunction = eachTestModule.assertions[eachAssertionId].function
-          const result = skipped ? true : await Assert(assertFunction, skipped)
-          resolve({testModuleId: eachTestModule.id, assertionId: eachAssertionId, result: result, skipped: skipped})
+          await eachTestModule.setUp()
+          const skipped =
+            config.dryRun ||
+            eachTestModule.assertions[eachAssertionId].skip ||
+            false
+          const result = skipped
+            ? true
+            : await Assert(
+                eachTestModule.assertions[eachAssertionId].function,
+                skipped
+              )
+          await eachTestModule.tearDown()
+          resolve({
+            testModuleId: eachTestModule.id,
+            assertionId: eachAssertionId,
+            result: result,
+            skipped: skipped,
+          })
         })
       )
     }
@@ -142,13 +155,17 @@ async function RunTests(testModules, config) {
   const moduleResults = {}
   for (const eachAssertionResult of assertionResults) {
     if (!moduleResults.hasOwnProperty(eachAssertionResult.testModuleId))
-      moduleResults[eachAssertionResult.testModuleId] = { assertionResults: []}
+      moduleResults[eachAssertionResult.testModuleId] = { assertionResults: [] }
 
-    moduleResults[eachAssertionResult.testModuleId].assertionResults.push(eachAssertionResult)
+    moduleResults[eachAssertionResult.testModuleId].assertionResults.push(
+      eachAssertionResult
+    )
   }
 
   let failedModules = 0
-  for (const [eachModuleId, eachModuleResult] of Object.entries(moduleResults)) {
+  for (const [eachModuleId, eachModuleResult] of Object.entries(
+    moduleResults
+  )) {
     config.logger.WriteModuleHead(eachModuleId)
     let failedAssertions = 0
 
@@ -248,6 +265,8 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
 
       if (module['assertions']) {
         if (!module['id']) module = { ...module, id: eachEntry }
+        if (!module['setUp']) module = { ...module, setUp: () => {} }
+        if (!module['tearDown']) module = { ...module, tearDown: () => {} }
         logger.Debug(`Found module: ${module['id']}`)
         testModules.push(module)
       }

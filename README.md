@@ -28,12 +28,22 @@ Jester has minimal boilerplate for creating test modules/suites
         - value: `{function: /* function that performs an assertion */ () => {assert.deepStrictEqual(2, 2)}, skip: false}`
     - Add more key/value pairs for each assertion you'd like to make
     - The `skip` parameter is used to skip assertions (not executed but still counted in module summary - result will be set to `true`)
+- Optionally, implement `export function setUp() {}` and/or `export function tearDown() {}` to execute code before and after each assertion
+    - `async` is optional, but supported
 
 ```javascript
 // test/jestertest.js
 import {strict as assert} from 'assert'
 
 export const id = 'Jester Test' // Optional - will default to file name if not present
+
+export async function setUp() {
+  console.log('I run before each assertion')
+}
+
+export async function setUp() {
+  console.log('I run after each assertion')
+}
 
 export const assertions = {
   '2 should be equal to 2': {function: () => assert.deepStrictEqual(2, 2), skip: false},
