@@ -8,6 +8,8 @@
 
 An async javascript test runner - using V8 code coverage and ES6 Modules
 
+It should be noted that the API is mostly solidified at this point. However, don't count on the API being fully consistent until a v1.0.0 release. That being said, there should be no reason for huge sweeping changes to occur from here on out, short of functionality-breaking bugs.
+
 * `jester` walks your `tests` folder (change using the `-d` flag) asynchronously to round up all your test modules then executes them all asynchronously
 * `performance` from `perf_hooks` to time the execution of all test executions
 * [Node Inspector](https://nodejs.org/api/inspector.html#inspector_class_inspector_session) and [Session Profiler](https://chromedevtools.github.io/devtools-protocol/v8/Profiler) to generate code coverage in json format
