@@ -1,22 +1,18 @@
 import { strict as assert, AssertionError } from 'assert'
-import { Assert } from '../../lib/assert.js'
 
 export const id = 'Assert Test'
 
 const dummy = 2
-let setUpVar = 4
-let setUpAsyncVar = 8
+let asyncValue = null
+let setUpVar = 0
 let tearDownVar = 0
-let tearDownAsyncVar = 's'
 
-export async function setUp() {
-  setUpVar = 6
-  setUpAsyncVar = 'y'
+export function setUp() {
+  setUpVar = 8
 }
 
-export async function tearDown() {
+export function tearDown() {
   tearDownVar = 10
-  tearDownAsyncVar = 'off'
 }
 
 export const assertions = {
@@ -24,23 +20,19 @@ export const assertions = {
     function: () => assert.deepStrictEqual(2, 2),
   },
   'Should be able to pass correct assertions asynchronously': {
-    function: async () =>
-      assert.deepStrictEqual(
-        await Assert(() => assert.deepStrictEqual(2, 2), false),
-        true
-      ),
+    function: async () => {
+      asyncValue = await new Promise(resolve => resolve(2))
+      assert.deepStrictEqual(asyncValue, 2)
+    },
   },
   'Should be able to fail incorrect assertions': {
-    function: async () => {
-      assert.throws(() => assert.deepStrictEqual(2, 4), AssertionError)
-    },
+    function: async () =>
+      assert.throws(() => assert.deepStrictEqual(2, 4), AssertionError),
   },
   'Should be able to fail incorrect assertions asynchronously': {
     function: async () => {
-      assert.deepStrictEqual(
-        await Assert(() => assert.deepStrictEqual(2, 4), false),
-        false
-      )
+      asyncValue = await new Promise(resolve => resolve(2))
+      assert.throws(() => assert.deepStrictEqual(asyncValue, 4), AssertionError)
     },
   },
   'Should be able to skip assertions': {
@@ -48,29 +40,12 @@ export const assertions = {
     skip: true,
   },
   'Should be able to assert on module variables': {
-    function: () => assert.strictEqual(dummy, 2),
+    function: () => assert.deepStrictEqual(dummy, 2),
   },
   'Should be able to setUp': {
-    function: () => assert.deepStrictEqual(setUpVar, 6),
-  },
-  'Should be able to setUp asynchronously': {
-    function: async () =>
-      assert.deepStrictEqual(
-        await Assert(() => assert.deepStrictEqual(setUpAsyncVar, 'y'), false),
-        true
-      ),
+    function: () => assert.deepStrictEqual(setUpVar, 8)
   },
   'Should be able to tearDown': {
     function: () => assert.deepStrictEqual(tearDownVar, 10),
-  },
-  'Should be able to tearDown asynchronously': {
-    function: async () =>
-      assert.deepStrictEqual(
-        await Assert(
-          () => assert.deepStrictEqual(tearDownAsyncVar, 'off'),
-          false
-        ),
-        true
-      ),
   },
 }
