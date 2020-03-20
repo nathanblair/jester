@@ -92,7 +92,7 @@ If you're using something like the following:
 let semaphore = [4]
 
 export async function setUp() {
-  semaphore.splice(0)
+  await new Promise(resolve => resolve(semaphore.splice(0))
 }
 
 export const assertions = {
@@ -122,7 +122,7 @@ If Jester supported `async setUp`, and used instead `await eachTestModule.setUp(
 
 Unfortunately there's no way to get around this behavior. If you ask the javascript engine to `await`, it will defer execution to the next asynchronous branch, and will only catch up once there are no more branches to fall back to. That means that the `setUp` method will be called `n` times in a row for the `n` assertions you are making. This completely negates the purpose of a `setUp` method, so `async` support and behavior of the `setUp` method has been removed.
 
-As an alternative, you could do something like the following:
+Consider rethinking the state of your module variables at test execution, your test flow, and other opportunities to reset module state before assertions without relying on an `async` method. If you're convinced you still need an `async` method to clear your state, you can always brute force it in the assertion (not in the `setUp` or `tearDown`):
 
 ```javascript
 // tests/jester_test.js
@@ -130,7 +130,7 @@ As an alternative, you could do something like the following:
 let semaphore = [4]
 
 async function runAsyncBeforeAssertion() {
-  semaphore.splice(0)
+  await new Promise(resolve => resolve(semaphore.splice(0))
 }
 
 export const assertions = {
@@ -144,32 +144,6 @@ export const assertions = {
   'Should be able to set up': {
     function: async () => {
       await runAsyncBeforeAssertion()
-      assert.deepStrictEqual(semaphore, [])
-    },
-  },
-}
-```
-
-More alternatively, use the `tearDown` method to `splice` any data after the semaphore is mutated in each test:
-
-```javascript
-// tests/jester_test.js
-
-let semaphore = [4]
-
-export function tearDown() {
-  semaphore.splice(0)
-}
-
-export const assertions = {
-  'Should be able to modify a global': {
-    function: async () => {
-      semaphore.push(4)
-      assert.deepStrictEqual(semaphore, [4])
-    },
-  },
-  'Should be able to set up': {
-    function: async () => {
       assert.deepStrictEqual(semaphore, [])
     },
   },
