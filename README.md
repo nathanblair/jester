@@ -11,21 +11,21 @@ An async javascript test runner - using V8 code coverage, profiling, and ES6 Mod
 
 It should be noted that the API is mostly solidified at this point. However, don't count on the API being fully consistent until a v1.0.0 release. That being said, there should be no reason for huge sweeping changes to occur from here on out, short of functionality-breaking bugs.
 
-## - `jester` walks your `tests` folder (change using the `-d` flag) asynchronously to round up all your test modules then executes them all asynchronously
+- `jester` walks your `tests` folder (change using the `-d` flag) asynchronously to round up all your test modules then executes them all asynchronously
 
-## - `performance` from `perf_hooks` to time the execution of all test executions
+- `performance` from `perf_hooks` to time the execution of all test executions
 
-## - [Node Inspector](https://nodejs.org/api/inspector.html#inspector_class_inspector_session) and [Session Profiler](https://chromedevtools.github.io/devtools-protocol/v8/Profiler) to generate code coverage in json format
+- [Node Inspector](https://nodejs.org/api/inspector.html#inspector_class_inspector_session) and [Session Profiler](https://chromedevtools.github.io/devtools-protocol/v8/Profiler) to generate code coverage in json format
 
 # Dependencies
 
-## - None!
+- None!
 
-Jester doesn't believe in dependencies. Not because 'dependencies are evil' or from 'Not invented here' syndrome. But because there is a time and place for dependencies to exist. Like, native GUI libraries, or unit testing frameworks. There is no need to use 3rd party dependencies to get color-output for terminals. We just bake that stuff right in. Its like, 20 lines of code or something.
+Jester doesn't believe in dependencies. Not because 'dependencies are evil' or from 'Not invented here' syndrome. But because there is a time and place for dependencies to exist. Like, native GUI libraries, or unit testing frameworks. There is no need to use 3rd party dependencies to get color-output for terminals. We just bake that stuff right in. Its like...20 lines of code or something.
 
 # Usage/Boilerplate
 
-## Jester has minimal boilerplate for creating test modules/suites
+Jester has minimal boilerplate for creating test modules/suites
 
 - Create a directory for your tests
 - Create a test file/module
@@ -82,7 +82,7 @@ export const assertions = {
 
 # FAQ
 
-## **Why can't `setUp` methods be marked as async?**
+## **Why can't `setUp` and `tearDown` methods be marked as async?**
 
 If you're using something like the following:
 
