@@ -82,7 +82,7 @@ export const assertions = {
 
 # FAQ
 
-## **Why can't `setUp` and `tearDown` methods be marked as async?**
+> **Why can't `setUp` and `tearDown` methods be marked as async?**
 
 If you're using something like the following:
 
