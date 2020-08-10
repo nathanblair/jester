@@ -206,7 +206,7 @@ async function FindTestModules(dir, logger, excludeDirs, testModules) {
           resolve(FindTestModules(fullPath, logger, excludeDirs, testModules))
         )
       )
-    } else if (entryStats?.isFile()) {
+    }  else if (eachEntry.split('.').pop() === "js") {
       logger.Debug(`Found file: ${fullPath}`)
       /** @type {TestModule} */
       let module
