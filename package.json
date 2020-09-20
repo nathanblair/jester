@@ -2,7 +2,7 @@
   "name": "@sonicoriginalsoftware/jester",
   "description": "Simple testing framework for javascript",
   "main": "index.js",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "type": "module",
   "bin": "./bin/jester.js",
   "keywords": [
