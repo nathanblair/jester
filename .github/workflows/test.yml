@@ -1,4 +1,4 @@
-name: PR Test
+name: Test
 
 on:
   pull_request:
@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '13.x'
+          node-version: '14.x'
 
       - name: Test
         run: |
