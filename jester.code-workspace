@@ -10,10 +10,7 @@
         "type": "node",
         "request": "launch",
         "name": "Launch Program",
-        "runtimeArgs": [
-          "--experimental-json-modules",
-          "--harmony"
-        ],
+        "runtimeArgs": [],
         "skipFiles": [
           "<node_internals>/**"
         ],

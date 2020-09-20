@@ -73,7 +73,6 @@ export const assertions = {
 
 - `npx -n "--harmony [experimental flags]" jester`
   - On node < 13.2.0 (maybe <13.0.0?), need to use the `--experimental-modules` flag
-  - All node versions (up to 13.9 so far) need to run with the `--experimental-json-modules` flag
   - The "--harmony" flag is necessary until node supports ECMA null chaining operator (`?.`) (v14.0.0?)
 
 # Help/Configuration
