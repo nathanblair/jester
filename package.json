@@ -1,7 +1,6 @@
 {
   "name": "@sonicoriginalsoftware/jester",
   "description": "Simple testing framework for javascript",
-  "main": "index.js",
   "version": "0.2.6",
   "type": "module",
   "bin": "./bin/jester.js",
@@ -18,12 +17,9 @@
   "homepage": "https://github.com/SonicOriginalSoftware/jester#readme",
   "scripts": {
     "test": "node --harmony bin/jester.js -x tests/exclude",
-    "coverage": "npx c8 --temp-directory=coverage report",
-    "build:types": "npx -p typescript tsc"
+    "coverage": "npx c8 --temp-directory=coverage report"
   },
-  "types": "types",
   "devDependencies": {
     "@types/node": "13.9.1"
-  },
-  "dependencies": {}
+  }
 }
